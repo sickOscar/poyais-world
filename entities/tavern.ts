@@ -1,11 +1,9 @@
 import {GameEntity} from "../abstract/ecs/game-entity";
-import {PositionComponent} from "../components/position-component";
+import {PositionComponent} from "../components/position.component";
 import {Vector} from "../abstract/geometry/vector";
-import {BuildingStatsComponent, BuildingTypes} from "../components/building-stats-component";
+import {BuildingStatsComponent, BuildingTypes} from "../components/building-stats.component";
 import {ExportEntity, World} from "../world";
-import {HumanStatsComponent} from "../components/human-stats-component";
-import {MovementComponent} from "../components/movement-component";
-import {WorldRefComponent} from "../components/world-ref-component";
+import {WorldRefComponent} from "../components/world-ref.component";
 
 export interface TavernOptions {
     position: Vector

@@ -1,17 +1,17 @@
 import {GameEntity} from "../abstract/ecs/game-entity";
-import {StateMachineComponent} from "../components/state-machine-component";
+import {StateMachineComponent} from "../components/state-machine.component";
 import {StateMachine} from "../abstract/fsm/state-machine";
-import {RestAtHomeState} from "../states/miner/rest-at-home-state";
-import {HumanStatsComponent} from "../components/human-stats-component";
-import {PositionComponent} from "../components/position-component";
-import {LivingState} from "../states/miner/living-state";
-import {MovementComponent} from "../components/movement-component";
-import {WorldRefComponent} from "../components/world-ref-component";
+import {RestAtHomeState} from "../states/miner/rest-at-home.state";
+import {HumanStatsComponent} from "../components/human-stats.component";
+import {PositionComponent} from "../components/position.component";
+import {LivingState} from "../states/miner/living.state";
+import {MovementComponent} from "../components/movement.component";
+import {WorldRefComponent} from "../components/world-ref.component";
 import {ExportEntity, World} from "../world";
 import {Vector} from "../abstract/geometry/vector";
-import {BuildingStatsComponent, BuildingTypes} from "../components/building-stats-component";
-import {HasMoneyToSpendComponent} from "../components/has-money-to-spend-component";
-import {DiedState} from "../states/miner/died-state";
+import {BuildingStatsComponent, BuildingTypes} from "../components/building-stats.component";
+import {HasMoneyToSpendComponent} from "../components/has-money-to-spend.component";
+import {DiedState} from "../states/miner/died.state";
 import {HasHouseComponent} from "../components/has-house.component";
 
 export interface MinerOptions {

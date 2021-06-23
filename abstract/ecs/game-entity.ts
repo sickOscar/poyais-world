@@ -1,9 +1,9 @@
 import {Telegram} from "../messaging/telegram";
 import {Component} from "./component";
 import {ExportEntity} from "../../world";
-import {HumanStatsComponent} from "../../components/human-stats-component";
-import {PositionComponent} from "../../components/position-component";
-import {MovementComponent} from "../../components/movement-component";
+import {HumanStatsComponent} from "../../components/human-stats.component";
+import {PositionComponent} from "../../components/position.component";
+import {MovementComponent} from "../../components/movement.component";
 
 export abstract class GameEntity {
 

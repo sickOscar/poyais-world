@@ -1,13 +1,13 @@
 import {IState, State} from "../../abstract/fsm/state";
 import {Miner} from "../../entities/miner";
 import {Telegram} from "../../abstract/messaging/telegram";
-import {HumanStatsComponent} from "../../components/human-stats-component";
-import {MovementComponent} from "../../components/movement-component";
+import {HumanStatsComponent} from "../../components/human-stats.component";
+import {MovementComponent} from "../../components/movement.component";
 import {Vector} from "../../abstract/geometry/vector";
-import {WorldRefComponent} from "../../components/world-ref-component";
-import {PositionComponent} from "../../components/position-component";
-import {StateMachineComponent} from "../../components/state-machine-component";
-import {DrinkingInTavernState} from "./drinking-in-tavern-state";
+import {WorldRefComponent} from "../../components/world-ref.component";
+import {PositionComponent} from "../../components/position.component";
+import {StateMachineComponent} from "../../components/state-machine.component";
+import {DrinkingInTavernState} from "./drinking-in-tavern.state";
 
 export class WalkingToTavernState extends State implements IState {
 

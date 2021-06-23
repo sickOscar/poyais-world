@@ -1,13 +1,13 @@
 import {IState, State} from "../../abstract/fsm/state";
 import {Miner} from "../../entities/miner";
 import {Telegram} from "../../abstract/messaging/telegram";
-import {HumanStatsComponent} from "../../components/human-stats-component";
-import {StateMachineComponent} from "../../components/state-machine-component";
-import {WorldRefComponent} from "../../components/world-ref-component";
-import {PositionComponent} from "../../components/position-component";
+import {HumanStatsComponent} from "../../components/human-stats.component";
+import {StateMachineComponent} from "../../components/state-machine.component";
+import {WorldRefComponent} from "../../components/world-ref.component";
+import {PositionComponent} from "../../components/position.component";
 import {Vector} from "../../abstract/geometry/vector";
-import {RestAtHomeState} from "./rest-at-home-state";
-import {MovementComponent} from "../../components/movement-component";
+import {RestAtHomeState} from "./rest-at-home.state";
+import {MovementComponent} from "../../components/movement.component";
 import {HasHouseComponent} from "../../components/has-house.component";
 
 export class WalkingHomeState extends State implements IState {

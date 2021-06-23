@@ -1,12 +1,12 @@
 import {IState, State} from "../../abstract/fsm/state";
 import {Miner} from "../../entities/miner";
 import {Telegram} from "../../abstract/messaging/telegram";
-import {HumanStatsComponent} from "../../components/human-stats-component";
-import {HasMoneyToSpendComponent} from "../../components/has-money-to-spend-component";
-import {StateMachineComponent} from "../../components/state-machine-component";
-import {WalkingHomeState} from "./walking-home-state";
-import {WorldRefComponent} from "../../components/world-ref-component";
-import {MovementComponent} from "../../components/movement-component";
+import {HumanStatsComponent} from "../../components/human-stats.component";
+import {HasMoneyToSpendComponent} from "../../components/has-money-to-spend.component";
+import {StateMachineComponent} from "../../components/state-machine.component";
+import {WalkingHomeState} from "./walking-home.state";
+import {WorldRefComponent} from "../../components/world-ref.component";
+import {MovementComponent} from "../../components/movement.component";
 import {Vector} from "../../abstract/geometry/vector";
 import {HasHouseComponent} from "../../components/has-house.component";
 

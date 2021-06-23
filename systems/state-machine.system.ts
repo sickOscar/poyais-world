@@ -1,7 +1,7 @@
 import {System} from "../abstract/ecs/system";
 import {World} from "../world";
 import {GameEntity} from "../abstract/ecs/game-entity";
-import {StateMachineComponent} from "../components/state-machine-component";
+import {StateMachineComponent} from "../components/state-machine.component";
 
 export class StateMachineSystem implements System {
 

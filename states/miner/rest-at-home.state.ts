@@ -1,12 +1,12 @@
 import {IState, State} from "../../abstract/fsm/state";
 import {Miner} from "../../entities/miner";
 import {Telegram} from "../../abstract/messaging/telegram";
-import {HumanStatsComponent} from "../../components/human-stats-component";
-import {StateMachineComponent} from "../../components/state-machine-component";
-import {WalkingToTavernState} from "./walking-to-tavern-state";
+import {HumanStatsComponent} from "../../components/human-stats.component";
+import {StateMachineComponent} from "../../components/state-machine.component";
+import {WalkingToTavernState} from "./walking-to-tavern.state";
 import {StateMachine} from "../../abstract/fsm/state-machine";
-import {WorldRefComponent} from "../../components/world-ref-component";
-import {MovementComponent} from "../../components/movement-component";
+import {WorldRefComponent} from "../../components/world-ref.component";
+import {MovementComponent} from "../../components/movement.component";
 import {Vector} from "../../abstract/geometry/vector";
 
 export class RestAtHomeState extends State implements IState {
