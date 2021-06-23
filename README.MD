@@ -1,4 +1,4 @@
-### A woderful place
+### A wonderful place 🗿
 
 ```
 npm i
