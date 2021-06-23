@@ -6,6 +6,7 @@ import {Miner} from "./entities/miner";
 import {MovementSystem} from "./systems/movement-system";
 import {Tavern} from "./entities/tavern";
 import {GameEntity} from "./abstract/ecs/game-entity";
+import {Vector} from "./abstract/geometry/vector";
 
 
 export interface ExportEntity {
@@ -39,10 +40,15 @@ export class World {
 
     constructor() {
 
-        const miner = new Miner(this);
+        const miner = new Miner(this, {
+            position: new Vector(10, 10),
+            housePosition: new Vector(10, 10)
+        });
         this.em.entities.set(miner.id, miner);
 
-        const tavern = new Tavern();
+        const tavern = new Tavern(this, {
+            position: new Vector(100, 100)
+        });
         this.em.entities.set(tavern.id, tavern);
 
         this.stateMachineSystem = new StateMachineSystem(this);

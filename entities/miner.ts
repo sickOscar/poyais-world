@@ -12,10 +12,20 @@ import {Vector} from "../abstract/geometry/vector";
 import {BuildingStatsComponent, BuildingTypes} from "../components/building-stats-component";
 import {HasMoneyToSpendComponent} from "../components/has-money-to-spend-component";
 import {DiedState} from "../states/miner/died-state";
+import {HasHouseComponent} from "../components/has-house.component";
+
+export interface MinerOptions {
+    position?: Vector,
+    housePosition?: Vector
+}
 
 export class Miner extends GameEntity {
 
-    constructor(world:World) {
+    constructor(world:World, options:MinerOptions) {
+
+        const position = options.position || new Vector(0, 0);
+        const housePosition = options.housePosition || new Vector(0, 0);
+
         super();
 
         const fsmComponent = new StateMachineComponent();
@@ -26,10 +36,11 @@ export class Miner extends GameEntity {
 
         this.addComponent(fsmComponent)
             .addComponent(new HumanStatsComponent())
-            .addComponent(new PositionComponent())
+            .addComponent(new PositionComponent(position.x, position.y))
             .addComponent(new MovementComponent())
             .addComponent(new HasMoneyToSpendComponent())
             .addComponent(new WorldRefComponent(world))
+            .addComponent(new HasHouseComponent(housePosition.x, housePosition.y))
 
     }
 
@@ -66,10 +77,14 @@ export class Miner extends GameEntity {
 
     }
 
+    setPosition(x:number, y:number) {
+        const positionComponent = <PositionComponent>this.getComponent('POSITION');
+        positionComponent.position = new Vector(x, y);
+    }
+
     die() {
         const stateMachineComponent = <StateMachineComponent>this.getComponent('STATE-MACHINE');
 
-        this.removeComponent('HUMAN-STATS');
         this.removeComponent('HAS-MONEY');
         this.removeComponent('MOVEMENT');
 

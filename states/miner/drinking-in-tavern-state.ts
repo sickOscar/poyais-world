@@ -8,6 +8,7 @@ import {WalkingHomeState} from "./walking-home-state";
 import {WorldRefComponent} from "../../components/world-ref-component";
 import {MovementComponent} from "../../components/movement-component";
 import {Vector} from "../../abstract/geometry/vector";
+import {HasHouseComponent} from "../../components/has-house.component";
 
 export class DrinkingInTavernState extends State implements IState {
 
@@ -24,6 +25,7 @@ export class DrinkingInTavernState extends State implements IState {
         const stateMachineComponent = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
         const worldComponent = <WorldRefComponent>entity.getComponent('WORLD-REF');
         const movementComponent = <MovementComponent>entity.getComponent('MOVEMENT');
+        const houseComponent = <HasHouseComponent>entity.getComponent('HAS-HOUSE');
 
         const delta = worldComponent.world.frame.deltaTime;
 
@@ -32,12 +34,12 @@ export class DrinkingInTavernState extends State implements IState {
             humanStats.thirst = Math.max(0, humanStats.thirst - (1 * delta));
         } else if (hasMoney.money <= 0) {
 
-            movementComponent.seekOn(new Vector(0, 0));
+            movementComponent.seekOn(houseComponent.housePosition);
 
             stateMachineComponent.getFSM().changeState(new WalkingHomeState());
         } else if (humanStats.thirst <= 0) {
 
-            movementComponent.seekOn(new Vector(0, 0));
+            movementComponent.seekOn(houseComponent.housePosition);
 
             stateMachineComponent.getFSM().changeState(new WalkingHomeState());
         }

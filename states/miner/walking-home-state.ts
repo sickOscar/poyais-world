@@ -8,6 +8,7 @@ import {PositionComponent} from "../../components/position-component";
 import {Vector} from "../../abstract/geometry/vector";
 import {RestAtHomeState} from "./rest-at-home-state";
 import {MovementComponent} from "../../components/movement-component";
+import {HasHouseComponent} from "../../components/has-house.component";
 
 export class WalkingHomeState extends State implements IState {
 
@@ -21,12 +22,14 @@ export class WalkingHomeState extends State implements IState {
         const worldComponent = <WorldRefComponent>entity.getComponent('WORLD-REF');
         const delta = worldComponent.world.frame.deltaTime;
         const humanStats = <HumanStatsComponent>entity.getComponent('HUMAN-STATS');
+        const hasHouse = <HasHouseComponent>entity.getComponent('HAS-HOUSE');
+
         humanStats.fatigue += 2 * delta;
         humanStats.boredom = Math.max(0, humanStats.boredom - (1 * delta));
         humanStats.thirst += 2 * delta;
 
         const positionComponent = <PositionComponent>entity.getComponent('POSITION');
-        if (Vector.distance(positionComponent.position, new Vector(0, 0)) < 1) {
+        if (Vector.distance(positionComponent.position, hasHouse.housePosition) < 1) {
             const smComponent = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
             smComponent.getFSM().changeState(new RestAtHomeState());
             const movementComponent = <MovementComponent>entity.getComponent('MOVEMENT');

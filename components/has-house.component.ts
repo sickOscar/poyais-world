@@ -1,14 +1,14 @@
 import {Component} from "../abstract/ecs/component";
 import {Vector} from "../abstract/geometry/vector";
 
-export class PositionComponent implements Component {
+export class HasHouseComponent implements Component {
 
-    name = "POSITION";
+    name = "HAS-HOUSE";
 
-    position = new Vector(0, 0)
+    housePosition:Vector;
 
     constructor(x:number, y:number) {
-        this.position = new Vector(x, y);
+        this.housePosition = new Vector(x, y);
     }
 
 }

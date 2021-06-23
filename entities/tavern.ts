@@ -2,20 +2,25 @@ import {GameEntity} from "../abstract/ecs/game-entity";
 import {PositionComponent} from "../components/position-component";
 import {Vector} from "../abstract/geometry/vector";
 import {BuildingStatsComponent, BuildingTypes} from "../components/building-stats-component";
-import {ExportEntity} from "../world";
+import {ExportEntity, World} from "../world";
 import {HumanStatsComponent} from "../components/human-stats-component";
 import {MovementComponent} from "../components/movement-component";
+import {WorldRefComponent} from "../components/world-ref-component";
+
+export interface TavernOptions {
+    position: Vector
+}
 
 export class Tavern extends GameEntity {
 
-    constructor() {
+    constructor(world:World, options:TavernOptions) {
         super();
 
-        const positionComponent = new PositionComponent();
-        positionComponent.position = new Vector(100, 100);
+        const positionComponent = new PositionComponent(options.position.x, options.position.y);
 
         this.addComponent(positionComponent)
-            .addComponent(new BuildingStatsComponent(BuildingTypes.TAVERN));
+            .addComponent(new BuildingStatsComponent(BuildingTypes.TAVERN))
+            .addComponent(new WorldRefComponent(world))
 
     }
 
