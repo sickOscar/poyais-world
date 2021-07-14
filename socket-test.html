@@ -1,4 +1,6 @@
-<script src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous"></script>
+<script src="https://cdn.socket.io/3.1.3/socket.io.min.js"
+        integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh"
+        crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/p5@1.3.1/lib/p5.js"></script>
 
 <script>
@@ -22,20 +24,91 @@
     function draw() {
         background(51);
 
-        // console.log(currentState);
+        stroke("white")
 
         initialState
             .filter(entity => entity.type !== "human")
             .forEach(building => {
-                fill("red");
-                square(building.position[0] - 20, building.position[1]- 20, 40);
+
+                noStroke();
+
+                if (building.type === "tavern") {
+                    fill("red");
+                    square(building.position[0] - 20, building.position[1] - 20, 50);
+                }
+
+                if (building.type === "house") {
+
+                    fill(`rgba(0,255,0, ${map(building.progress, 0, 100, 0.1, 1)})`);
+                    square(building.position[0] - 10, building.position[1] - 10, 20);
+
+
+                    fill("red")
+                    rect(
+                        building.position[0] - 10,
+                        building.position[1] - 10,
+                        map(building.progress, 0, 100, 0, 20),
+                        2
+                    )
+
+
+                }
+
+                if (building.type === "bank") {
+                    fill("orange");
+                    square(building.position[0] - 10, building.position[1] - 10, 40);
+                }
+
+                if (building.type === "mine") {
+                    fill("gray");
+                    circle(building.position[0] - 10, building.position[1] - 10, 20);
+                }
+
+                if (building.type === "tree") {
+                    fill("brown");
+                    circle(
+                        building.position[0] - building.dimensions.radius / 2,
+                        building.position[1] - building.dimensions.radius / 2,
+                        building.dimensions.radius
+                    )
+                }
+
             })
 
+
         currentState.forEach(entity => {
-            console.log(entity)
+            // console.log(entity)
             fill("white")
+            noStroke();
+
             circle(entity.position[0],entity.position[1],10);
+
+            stroke("white")
+            line(entity.position[0],entity.position[1],
+                entity.position[0] + entity.heading[0] *  10,entity.position[1] + entity.heading[1] * 10)
+
+
+            noStroke();
+            if (entity.wandering) {
+                const distance = entity.wandering.distance;
+                const radius = entity.wandering.radius;
+                const target = entity.wandering.target;
+
+                const radiusCircleCenter = createVector(entity.heading[0], entity.heading[1]).normalize().mult(distance);
+
+                noFill();
+                stroke("purple");
+                circle(entity.position[0] + radiusCircleCenter.x, entity.position[1] + radiusCircleCenter.y, radius)
+
+                fill("yellow");
+                noStroke();
+                circle(target[0], target[1], 5);
+
+            }
+
         })
+
+
     }
 
 </script>

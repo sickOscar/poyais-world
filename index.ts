@@ -25,9 +25,13 @@ io.on('connection', (socket:Socket) => {
 
     socket.emit('initial-state', JSON.stringify(game.getInitialState()));
 
+    const emitStatic = setInterval(() => {
+        socket.emit('initial-state', JSON.stringify(game.getInitialState()));
+    }, 2000)
+
     const emitInterval = setInterval(() => {
         socket.emit('state', JSON.stringify(game.getState()));
-    }, 1000 / 10)
+    }, 1000 / 20)
 
     socket.on('disconnect', () => {
         console.log('user disconnected');

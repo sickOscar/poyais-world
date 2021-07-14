@@ -1,8 +1,10 @@
 import {Telegram} from "../messaging/telegram";
 import {GameEntity} from "../ecs/game-entity";
+import {StateMachine} from "./state-machine";
 
 export interface IState {
   name:string;
+  localFsm?:StateMachine|null;
   execute(owner:GameEntity):void;
   enter(owner:GameEntity):void;
   exit(owner:GameEntity):void;

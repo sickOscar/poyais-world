@@ -7,7 +7,7 @@ export class HasMoneyToSpendComponent implements Component {
     money:number;
 
     constructor() {
-        this.money = Math.round(Math.random()*100);
+        this.money = Math.round(Math.random()*10);
     }
 
 }

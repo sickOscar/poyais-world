@@ -4,7 +4,7 @@ import {Telegram} from "../abstract/messaging/telegram";
 
 export class EmptyState extends State implements IState {
 
-    name = "WalkingToTavern";
+    name = "EmptyState";
 
     enter(entity:GameEntity) {
 

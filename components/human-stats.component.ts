@@ -64,6 +64,10 @@ const names = [
     "Bolin"
 ]
 
+export enum Gender {
+    MALE = 'MALE',
+    FEMALE = 'FEMALE'
+}
 
 export class HumanStatsComponent implements Component {
 
@@ -73,36 +77,38 @@ export class HumanStatsComponent implements Component {
     characterSurname: string;
     characterFullName:string;
     age: number;
-    max_age: number;
+    maxAge: number;
     health: number;
     weight: number;
     height: number;
     fatigue: number;
-    fatigue_threshold:number;
-    max_fatigue:number;
+    fatigueThreshold:number;
+    maxFatigue:number;
     thirst: number;
-    max_thirst: number;
-    thirst_threshold: number;
+    maxThirst: number;
+    thirstThreshold: number;
     boredom: number;
-    max_boredom: number;
+    maxBoredom: number;
+    gender:Gender;
 
     constructor() {
         this.characterName = names[Math.round(Math.random()*(names.length - 1))];
         this.characterSurname = `son of ${names[Math.round(Math.random()*(names.length-1))]}`;
         this.characterFullName = `${this.characterName} ${this.characterSurname}`;
         this.age = 0;
-        this.max_age = 100 + Math.round(Math.random() * 20);
+        this.maxAge = 100 + Math.round(Math.random() * 20);
         this.health = 50 + Math.round(Math.random() * 100);
         this.weight = 50 + Math.round(Math.random() * 100)
         this.height = 100 + Math.round(Math.random() * 50);
         this.fatigue = 0;
-        this.fatigue_threshold = 100;
-        this.max_fatigue = 200 + Math.round(Math.random() * 100);
+        this.fatigueThreshold = 100;
+        this.maxFatigue = 200 + Math.round(Math.random() * 100);
         this.thirst = 0;
-        this.max_thirst = 100 + Math.round(Math.random() * 50);
-        this.thirst_threshold = this.max_thirst / 2;
+        this.maxThirst = 100 + Math.round(Math.random() * 50);
+        this.thirstThreshold = this.maxThirst / 2;
         this.boredom = 0;
-        this.max_boredom =  Math.round(Math.random() * 20);
+        this.maxBoredom =  20 + Math.round(Math.random() * 10);
+        this.gender = Math.random() > 0.5 ? Gender.MALE : Gender.FEMALE;
     }
 
 }

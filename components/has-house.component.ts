@@ -1,14 +1,14 @@
 import {Component} from "../abstract/ecs/component";
-import {Vector} from "../abstract/geometry/vector";
+import {House} from "../entities/house";
 
 export class HasHouseComponent implements Component {
 
     name = "HAS-HOUSE";
 
-    housePosition:Vector;
+    house:House;
 
-    constructor(x:number, y:number) {
-        this.housePosition = new Vector(x, y);
+    constructor(h:House) {
+        this.house = h;
     }
 
 }
