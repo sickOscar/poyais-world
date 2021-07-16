@@ -92,8 +92,8 @@ export class Forest extends GameEntity {
         for (let i = 0; i < this.trees; i++) {
             if (this.forest[i]) continue;
 
-            const x = center.x / 2 + radius * 2 * Math.random();
-            const y = center.y / 2 + radius * 2 * Math.random();
+            const x = center.x - radius / 2 + radius * 2 * Math.random();
+            const y = center.y - radius / 2 + radius * 2 * Math.random();
             // const r = this.minRadius + this.treeRadius * Math.random();
 
             this.forest[i] = new Tree(this.world, {

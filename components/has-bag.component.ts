@@ -7,9 +7,13 @@ export class HasBagComponent implements Component {
     gold:number;
     wood:number;
 
+    maxWood:number;
+
     constructor() {
         this.gold = 0;
         this.wood = 0;
+
+        this.maxWood = 10;
     }
 
 }

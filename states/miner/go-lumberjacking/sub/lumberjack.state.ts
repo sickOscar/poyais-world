@@ -46,33 +46,38 @@ export class LumberjackState extends State implements IState {
     execute(entity:Miner) {
 
         const humanStats = <HumanStatsComponent>entity.getComponent('HUMAN-STATS');
-        const worldComponent = <WorldRefComponent>entity.getComponent('WORLD-REF');
-        const delta = worldComponent.world.frame.deltaTime;
+        const wc = <WorldRefComponent>entity.getComponent('WORLD-REF');
+        const delta = wc.world.frame.deltaTime;
         const movement = <MovementComponent>entity.getComponent('MOVEMENT');
         const hasBag = <HasBagComponent>entity.getComponent('HAS-BAG');
+        const stateMachine = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
 
         humanStats.thirst += 2 * delta;
         humanStats.fatigue = Math.max(0, humanStats.fatigue + (4 * delta));
 
         this.timePassedLumberjack += 1 * delta;
+
         if (hasBag) {
 
-            if (this.tree) {
+            if (this.tree && wc.hasEntity(this.tree.id)) {
                 const life = <TreeLifecycleComponent>this.tree.getComponent('TREE-LIFECYCLE');
                 life.availability = Math.max(0, life.availability - 1 * delta / 2)
-                if (life.availability > 0) {
+
+                if (life.availability > 0 && hasBag.wood < hasBag.maxWood) {
                     hasBag.wood += 1 * delta / 2;
-                } else {
-                    this.timePassedLumberjack = this.maxTimeLumberjack;
+                } else if (hasBag.wood < hasBag.maxWood) {
+                    const localFsm = stateMachine.getFSM().currentState.localFsm;
+                    localFsm && localFsm.changeState(new WalkToTreeState());
                 }
+
             } else {
-                this.timePassedLumberjack = this.maxTimeLumberjack;
+                const localFsm = stateMachine.getFSM().currentState.localFsm;
+                localFsm && localFsm.changeState(new WalkToTreeState());
+                // this.timePassedLumberjack = this.maxTimeLumberjack;
             }
         }
 
         if (this.timePassedLumberjack >= this.maxTimeLumberjack) {
-            const stateMachine = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
-
             // set first to ho rest so after deposit he eventually go rest (revert state)
             // stateMachine.getFSM().changeState(new GoRest());
             stateMachine.getFSM().revert();

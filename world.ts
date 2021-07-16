@@ -79,13 +79,6 @@ export class World {
         })
         this.em.entities.set(bank.id, bank);
 
-
-
-
-
-
-
-
         // const miner2 = new Miner(this, {
         //     position: new Vector(100, 150),
         //     // house: house2
@@ -121,7 +114,7 @@ export class World {
     }
 
     addMiners() {
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 5; i++) {
             const miner = new Miner(this, {
                 position: new Vector(
                     Math.round(Math.random() * 700),
@@ -165,17 +158,17 @@ export class World {
             distribution: 'ROUND',
             center: new Vector(700, 300),
             radius: 70,
-            trees: 5,
+            trees: 15,
             minRadius: 5,
             treeRadius: 10
         });
         this.em.entities.set(f.id, f);
 
         const f2 = new Forest(this, {
-            distribution: 'ROUND',
+            distribution: 'SQUARE',
             center: new Vector(300, 700),
-            radius: 70,
-            trees: 5,
+            radius: 100,
+            trees: 15,
             minRadius: 5,
             treeRadius: 10
         });
