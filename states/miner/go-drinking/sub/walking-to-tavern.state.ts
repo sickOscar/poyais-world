@@ -15,7 +15,14 @@ export class WalkingToTavernState extends WalkingTo implements IState {
 
     enter(entity:Miner) {
         const tavern = entity.locateClosestBuilding(BuildingTypes.TAVERN);
-        (<MovementComponent>entity.getComponent("MOVEMENT")).seekOn(tavern);
+
+        if (tavern) {
+            (<MovementComponent>entity.getComponent("MOVEMENT")).arriveOn(tavern);
+        } else {
+            const sm = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
+            sm.getFSM().revert();
+        }
+
     }
 
     execute(entity:Miner) {
@@ -25,7 +32,7 @@ export class WalkingToTavernState extends WalkingTo implements IState {
         const positionComponent = <PositionComponent>entity.getComponent('POSITION');
         const movementComponent = <MovementComponent>entity.getComponent('MOVEMENT');
 
-        if (movementComponent.seekTarget && Vector.distance(movementComponent.seekTarget, positionComponent.position) < 1) {
+        if (movementComponent.arriveTarget && Vector.distance(movementComponent.arriveTarget, positionComponent.position) < 1) {
             const smComponent = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
             const localFsm = smComponent.getFSM().currentState.localFsm;
             localFsm && localFsm.changeState(new DrinkingInTavernState());
@@ -36,7 +43,7 @@ export class WalkingToTavernState extends WalkingTo implements IState {
     exit(entity:Miner) {
         const movementComponent = <MovementComponent>entity.getComponent('MOVEMENT');
         if (movementComponent) {
-            movementComponent.seekOff();
+            movementComponent.arriveOff();
         }
     }
 

@@ -45,7 +45,7 @@ export abstract class GameEntity {
 
   export():ExportEntity {
     return {
-      id: 0,
+      id: this.id,
       name: 'unknown',
       type: 'unknown',
       position: [0, 0]

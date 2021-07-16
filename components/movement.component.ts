@@ -1,6 +1,8 @@
 import {Component} from "../abstract/ecs/component";
 import {Vector} from "../abstract/geometry/vector";
 import {World} from "../world";
+import {GameEntity} from "../abstract/ecs/game-entity";
+import {MassComponent} from "./mass.component";
 
 export class MovementComponent implements Component {
 
@@ -12,13 +14,13 @@ export class MovementComponent implements Component {
     sideVector:Vector;
 
     mass:number;
-    maxSpeed = 20;
+    maxSpeed:number;
     maxForce = 200;
     maxTurnRate:number;
 
     seekTarget:Vector|null = null;
+    arriveTarget:Vector|null = null;
     // fleeOn:boolean = false;
-    // arriveOn:boolean = false;
     // pursuitOn:boolean = false;
     wandering:boolean = false;
 
@@ -31,7 +33,7 @@ export class MovementComponent implements Component {
 
     worldRef:World;
 
-    constructor(world:World) {
+    constructor(world:World, entity:GameEntity) {
         this.worldRef = world;
 
         this.velocity = new Vector(0, 0);
@@ -43,17 +45,20 @@ export class MovementComponent implements Component {
             .normalize()
             .multiply(this.wanderRadius);
 
-        this.mass = 1;
+        const mass = <MassComponent>entity.getComponent('MASS');
+        if (mass) {
+            this.mass = 100 / mass.weight
+            this.maxSpeed = (1 / this.mass) * 80;
+        } else {
+            this.mass = 1;
+            this.maxSpeed = 80
+        }
+
         this.maxTurnRate = 10;
     }
 
     isMoving() {
-        return this.seekTarget || this.wandering;
-    }
-
-    freeze() {
-        this.velocity = new Vector(0, 0);
-        this.acceleration = new Vector(0, 0);
+        return this.seekTarget || this.wandering || this.arriveTarget;
     }
 
     updatePosition(currentPosition:Vector, delta:number):Vector {
@@ -97,6 +102,9 @@ export class MovementComponent implements Component {
         if (this.seekTarget) {
             steeringForce = steeringForce.add(this.seek(position));
         }
+        if (this.arriveTarget) {
+            steeringForce = steeringForce.add(this.arrive(position));
+        }
         if (this.wandering) {
             const wanderForce = this.wander(position);
             steeringForce = steeringForce.add(wanderForce);
@@ -113,6 +121,14 @@ export class MovementComponent implements Component {
 
     seekOff() {
         this.seekTarget = null;
+    }
+
+    arriveOn(targetPosition:Vector) {
+        this.arriveTarget = targetPosition.clone()
+    }
+
+    arriveOff() {
+        this.arriveTarget = null;
     }
 
     wanderOn() {
@@ -156,6 +172,30 @@ export class MovementComponent implements Component {
             .normalize()
             .multiply(this.maxSpeed);
         return desiredVelocity.subtract(this.velocity);
+    }
+
+
+    private arrive(currentPosition:Vector): Vector {
+
+        const deceleration = 3;
+
+        if (!this.arriveTarget) {
+            return new Vector(0, 0)
+        }
+
+        const toTarget = this.arriveTarget.subtract(currentPosition);
+        const dist = toTarget.length();
+        if (dist > 0) {
+
+            let speed = dist / deceleration;
+            speed = Math.min(speed, this.maxSpeed);
+
+            const desiredVel:Vector = toTarget.multiply(speed).divide(dist)
+
+            return desiredVel.subtract(this.velocity);
+        }
+
+        return new Vector(0, 0);
     }
 
 

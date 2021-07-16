@@ -25,7 +25,7 @@ export class GoRest extends State implements IState {
         }
 
         const buildable = <BuildableComponent>hasHouse.house.getComponent('BUILDABLE');
-        if (buildable.progress < 100) {
+        if (buildable && buildable.progress < 100) {
             const stateMachine = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
             stateMachine.getFSM().changeState(new BuildHouseState());
             return

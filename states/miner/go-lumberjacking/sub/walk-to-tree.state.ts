@@ -14,9 +14,17 @@ export class WalkToTreeState extends WalkingTo implements IState {
     name = "WalkToTree";
 
     enter(entity: Miner) {
-        const mine = entity.locateClosestBuilding(BuildingTypes.TREE);
+        const tree = entity.locateClosestBuilding(BuildingTypes.TREE);
         const movementComponent = <MovementComponent>entity.getComponent('MOVEMENT');
-        movementComponent.seekOn(mine);
+
+        if (!tree) {
+            const smComponent = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
+            smComponent.getFSM().revert();
+            return;
+        }
+
+        movementComponent && movementComponent.arriveOn(tree);
+
     }
 
     execute(entity: Miner) {
@@ -24,8 +32,7 @@ export class WalkToTreeState extends WalkingTo implements IState {
         const positionComponent = <PositionComponent>entity.getComponent('POSITION');
         const movementComponent = <MovementComponent>entity.getComponent('MOVEMENT');
 
-
-        if (movementComponent.seekTarget && Vector.distance(positionComponent.position, movementComponent.seekTarget) < 1) {
+        if (movementComponent.arriveTarget && Vector.distance(positionComponent.position, movementComponent.arriveTarget) < 0.1) {
             const smComponent = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
             const localFsm = smComponent.getFSM().currentState.localFsm;
             localFsm && localFsm.changeState(new LumberjackState());
@@ -35,7 +42,7 @@ export class WalkToTreeState extends WalkingTo implements IState {
 
     exit(entity: Miner) {
         const movementComponent = <MovementComponent>entity.getComponent('MOVEMENT');
-        movementComponent && movementComponent.seekOff();
+        movementComponent && movementComponent.arriveOff();
     }
 
     onMessage(owner: any, telegram: Telegram): boolean {

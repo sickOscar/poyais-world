@@ -6,7 +6,7 @@ import {PositionComponent} from "../components/position.component";
 import {LivingState} from "../states/miner/living.state";
 import {MovementComponent} from "../components/movement.component";
 import {WorldRefComponent} from "../components/world-ref.component";
-import {ExportEntity, World} from "../world";
+import {ExportEntity, ExportHumanEntity, World} from "../world";
 import {Vector} from "../abstract/geometry/vector";
 import {BuildingStatsComponent, BuildingTypes} from "../components/building-stats.component";
 import {HasMoneyToSpendComponent} from "../components/has-money-to-spend.component";
@@ -19,6 +19,11 @@ import {GoRest} from "../states/miner/go-rest/go-rest";
 import {House} from "./house";
 import {IState} from "../abstract/fsm/state";
 import {BuildableComponent} from "../components/buildable.component";
+import {HouseBlock} from "./house-block";
+import {HouseBlockComponent} from "../components/house-block.component";
+import {TreeLifecycleComponent} from "../components/tree-lifecycle.component";
+import {MineLifecycleComponent} from "../components/mine-lifecycle.component";
+import {MassComponent} from "../components/mass.component";
 
 export interface MinerOptions {
     position?: Vector,
@@ -36,13 +41,17 @@ export class Miner extends GameEntity {
 
         const fsmComponent = new StateMachineComponent();
 
+        const weight = 80 + Math.round(Math.random() * 40);
+
         this.addComponent(fsmComponent)
             .addComponent(new HumanStatsComponent())
+            .addComponent(new MassComponent(weight))
             .addComponent(new PositionComponent(position.x, position.y))
-            .addComponent(new MovementComponent(world))
+            .addComponent(new MovementComponent(world, this))
             .addComponent(new HasMoneyToSpendComponent())
             .addComponent(new WorldRefComponent(world))
             .addComponent(new HasBagComponent())
+
 
         if (options.house) {
             this.addComponent(new HasHouseComponent(options.house))
@@ -55,7 +64,7 @@ export class Miner extends GameEntity {
 
     }
 
-    locateClosestBuilding(type:BuildingTypes):Vector {
+    locateClosestBuilding(type:BuildingTypes):Vector|null {
 
         const worldRefComponent = <WorldRefComponent>this.getComponent('WORLD-REF')
         
@@ -75,6 +84,21 @@ export class Miner extends GameEntity {
             const positionComponent = <PositionComponent>building.getComponent('POSITION')
             const dist = Vector.distance(positionComponent.position, minerPosition.position);
             if (dist < closestDistance) {
+
+                if (type === BuildingTypes.TREE) {
+                    const tree = <TreeLifecycleComponent>building.getComponent('TREE-LIFECYCLE');
+                    if (tree && tree.availability <= 0) {
+                        continue;
+                    }
+                }
+
+                if (type === BuildingTypes.MINE) {
+                    const mine = <MineLifecycleComponent>building.getComponent('MINE-LIFECYCLE');
+                    if (mine && mine.availability <= 0) {
+                        continue
+                    }
+                }
+
                 closestDistance = dist;
                 closestBuilding = building;
             }
@@ -83,16 +107,47 @@ export class Miner extends GameEntity {
         if (closestBuilding) {
             return (<PositionComponent>closestBuilding.getComponent('POSITION')).position.clone();
         } else {
-            return minerPosition.position.clone();
+            return null;
         }
 
     }
 
-    locatePlaceToBuildHouse():Vector {
-        return new Vector(
-            50 + Math.round(Math.random() * 500),
-            50 + Math.round(Math.random() * 500)
-        )
+    locatePlaceToBuildHouse(width:number, height:number):[HouseBlock, Vector, number, number]|null {
+
+        const w = <WorldRefComponent>this.getComponent('WORLD-REF');
+        const ents:[number, GameEntity][] = Array.from(w.world.em.entities);
+
+        const minWidth = 5;
+        const minHeight = 5;
+
+        for (let i = 0; i < ents.length; i++) {
+            const entity:GameEntity = ents[i][1];
+            const hb = <HouseBlockComponent>entity.getComponent('HOUSE-BLOCK');
+
+            let iterations = 0;
+
+            if (hb) {
+                let w = width;
+                let h = height;
+                while (iterations < 10 && w > minWidth && h > minHeight) {
+                    const placeFound = (entity as HouseBlock).findSuitablePlace(w, h);
+                    if (placeFound) {
+                        return [entity as HouseBlock, placeFound, w, h];
+                    }
+                    w -= 2;
+                    h -= 2;
+                    iterations++;
+                }
+
+
+            }
+
+
+
+
+        }
+
+        return null;
     }
 
     setPosition(x:number, y:number) {
@@ -110,11 +165,12 @@ export class Miner extends GameEntity {
         stateMachineComponent.getFSM().changeState(new DiedState());
     }
 
-    export():ExportEntity {
+    export():ExportHumanEntity {
         const humanStatsComponent = <HumanStatsComponent>this.getComponent('HUMAN-STATS');
         const positionComponent = <PositionComponent>this.getComponent('POSITION');
         const movementComponent = <MovementComponent>this.getComponent('MOVEMENT');
         const smComponent = <StateMachineComponent>this.getComponent('STATE-MACHINE');
+        const mass = <MassComponent>this.getComponent('MASS');
 
         const exportEntity:ExportEntity = {
             id: this.id,
@@ -124,15 +180,17 @@ export class Miner extends GameEntity {
             position: [positionComponent.position.x, positionComponent.position.y],
         }
 
+        const humanEntity:Partial<ExportHumanEntity> = {};
+
         if (movementComponent) {
-            exportEntity.heading = [movementComponent.heading.x, movementComponent.heading.y];
+            humanEntity.heading = [movementComponent.heading.x, movementComponent.heading.y];
             if (movementComponent.wandering) {
 
                 const targetToWorld = Vector.pointToWorldSpace(
                     movementComponent.wanderTarget, movementComponent.heading, positionComponent.position
                 )
 
-                exportEntity.wandering = {
+                humanEntity.wandering = {
                     distance : movementComponent.wanderDistance,
                     radius : movementComponent.wanderRadius,
                     target: [targetToWorld.x, targetToWorld.y]
@@ -140,7 +198,11 @@ export class Miner extends GameEntity {
             }
         }
 
-        return exportEntity;
+        if (mass) {
+            humanEntity.weight = mass.weight;
+        }
+
+        return Object.assign({}, exportEntity, humanEntity) as ExportHumanEntity;
 
     }
 

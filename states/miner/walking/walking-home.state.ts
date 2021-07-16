@@ -7,7 +7,6 @@ import {Vector} from "../../../abstract/geometry/vector";
 import {MovementComponent} from "../../../components/movement.component";
 import {HasHouseComponent} from "../../../components/has-house.component";
 import {WalkingTo} from "./walking-to.state";
-import {RestingAtHomeState} from "../go-rest/sub/resting-at-home.state";
 
 export class WalkingHomeState extends WalkingTo implements IState {
 
@@ -16,7 +15,12 @@ export class WalkingHomeState extends WalkingTo implements IState {
     enter(entity:Miner) {
         const hasHouse = <HasHouseComponent>entity.getComponent('HAS-HOUSE');
         const movementComponent = <MovementComponent>entity.getComponent('MOVEMENT');
-        movementComponent.seekOn((<PositionComponent>hasHouse.house.getComponent('POSITION')).position);
+
+        if (hasHouse) {
+            movementComponent.arriveOn((<PositionComponent>hasHouse.house.getComponent('POSITION')).position);
+        }
+
+
     }
 
     execute(entity:Miner) {
@@ -41,7 +45,7 @@ export class WalkingHomeState extends WalkingTo implements IState {
 
     exit(entity:Miner) {
         const movementComponent = <MovementComponent>entity.getComponent('MOVEMENT');
-        movementComponent && movementComponent.seekOff();
+        movementComponent && movementComponent.arriveOff();
     }
 
     onMessage(owner:any, telegram:Telegram):boolean {

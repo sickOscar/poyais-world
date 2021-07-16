@@ -16,7 +16,8 @@ import {BuildingStatsComponent, BuildingTypes} from "./components/building-stats
 import {Tree} from "./entities/tree";
 import {EntityDimensions} from "./components/dimensions.component";
 import {TreesSystem} from "./systems/trees.system";
-import {Forest} from "./entities/abstract/forest";
+import {Forest} from "./entities/forest";
+import {HouseBlock} from "./entities/house-block";
 
 
 export interface ExportEntity {
@@ -25,14 +26,22 @@ export interface ExportEntity {
     type: string;
     state?: string,
     position: [number, number],
-    dimensions?: EntityDimensions,
-    heading?: [number, number],
+    dimensions?: EntityDimensions
+}
+
+export type ExportHumanEntity = ExportEntity &  {
+    heading: [number, number],
     wandering?: {
         distance: number,
         radius: number,
         target: [number, number]
     },
-    progress?: number
+    weight?: number
+}
+
+export type ExportBuildingEntity = ExportEntity & {
+    progress?: number,
+    availability?: number
 }
 
 export interface TimeFrame {
@@ -57,25 +66,12 @@ export class World {
 
         this.addTrees();
 
-        const mine = new Mine(this, {
-            position: new Vector(150, 150)
-        })
-        this.em.entities.set(mine.id, mine);
+        this.addMines();
 
-        // const house = new House(this, {
-        //     position: new Vector(200, 100)
-        // })
-        // this.em.entities.set(house.id, house);
-        //
-        // const house2 = new House(this, {
-        //     position: new Vector(230, 342)
-        // })
-        // this.em.entities.set(house2.id, house2);
+        this.addHouseBlocks();
 
-        // const house3 = new House(this, {
-        //     position: new Vector(430, 202)
-        // })
-        // this.em.entities.set(house3.id, house3);
+        this.addMiners();
+
 
         const bank = new Bank(this, {
             position: new Vector(500, 100),
@@ -84,40 +80,10 @@ export class World {
         this.em.entities.set(bank.id, bank);
 
 
-        // for ( let i = 0; i< 2; i++) {
-        //
-        //     const house = new House(this, {
-        //         position: new Vector(200 + i, 200 + i),
-        //     })
-        //     this.em.entities.set(house.id, house);
-        //
-        //     const miner = new Miner(this, {
-        //         position: new Vector(350, 350),
-        //         house: (<PositionComponent>house.getComponent('POSITION')).position
-        //     });
-        //     this.em.entities.set(miner.id, miner);
-        //     Bank.addAccount(miner.id, Math.random() * 50);
-        //
-        // }
 
-        // const miner = new Miner(this, {
-        //     position: new Vector(300, 200),
-        //     // house: house
-        // });
-        // this.em.entities.set(miner.id, miner);
-        // Bank.addAccount(miner.id, Math.random() * 50);
 
-        for (let i = 0; i < 100; i++) {
-            const miner = new Miner(this, {
-                position: new Vector(
-                    Math.round(Math.random() * 500),
-                    Math.round(Math.random() * 500)
-                ),
-                // house: house
-            });
-            this.em.entities.set(miner.id, miner);
-            Bank.addAccount(miner.id, Math.random() * 50);
-        }
+
+
 
 
         // const miner2 = new Miner(this, {
@@ -132,6 +98,12 @@ export class World {
             name: "A tavernella"
         });
         this.em.entities.set(tavern.id, tavern);
+
+        const tavern1 = new Tavern(this, {
+            position: new Vector(500, 500),
+            name: "Uè Uè"
+        });
+        this.em.entities.set(tavern1.id, tavern1);
 
         const stateMachineSystem = new StateMachineSystem(this);
         this.systems.set('STATE-MACHINE-SYSTEM', stateMachineSystem);
@@ -148,6 +120,45 @@ export class World {
         this.update(0);
     }
 
+    addMiners() {
+        for (let i = 0; i < 20; i++) {
+            const miner = new Miner(this, {
+                position: new Vector(
+                    Math.round(Math.random() * 700),
+                    Math.round(Math.random() * 500)
+                ),
+                // house: house
+            });
+            this.em.entities.set(miner.id, miner);
+            Bank.addAccount(miner.id, Math.random() * 50);
+        }
+
+        setInterval(() => {
+            const miner = new Miner(this, {
+                position: new Vector(
+                    Math.round(Math.random() * 700),
+                    Math.round(Math.random() * 500)
+                ),
+                // house: house
+            });
+            this.em.entities.set(miner.id, miner);
+            Bank.addAccount(miner.id, Math.random() * 50);
+        }, 5000)
+    }
+
+    addMines() {
+        const mine = new Mine(this, {
+            position: new Vector(700, 700)
+        })
+        this.em.entities.set(mine.id, mine);
+
+        const mine2 = new Mine(this, {
+            position: new Vector(200, 700)
+        })
+        this.em.entities.set(mine2.id, mine2);
+
+    }
+
     addTrees() {
 
         const f = new Forest(this, {
@@ -158,12 +169,7 @@ export class World {
             minRadius: 5,
             treeRadius: 10
         });
-
-        f.forest.forEach(tree => {
-            if (tree) {
-                this.em.entities.set(tree.id, tree);
-            }
-        })
+        this.em.entities.set(f.id, f);
 
         const f2 = new Forest(this, {
             distribution: 'ROUND',
@@ -173,21 +179,25 @@ export class World {
             minRadius: 5,
             treeRadius: 10
         });
+        this.em.entities.set(f2.id, f2);
 
-        f2.forest.forEach(tree => {
-            if (tree) {
-                this.em.entities.set(tree.id, tree);
-            }
+    }
+
+    addHouseBlocks() {
+
+        const houseBlock = new HouseBlock(this, {
+            position: new Vector(200, 200),
+            width: 200,
+            height: 100
         })
+        this.em.entities.set(houseBlock.id, houseBlock);
 
-        // const treesNum = 10;
-        // for(let i = 0; i < treesNum; i++) {
-        //     const displacement = 40;
-        //     const t = new Tree(this, {
-        //         position: new Vector(450 +  Math.cos(Math.PI * (1 / i)) * displacement, 450 + Math.sin(Math.PI * (1 / i)) * displacement)
-        //     })
-        //     this.em.entities.set(t.id, t);
-        // }
+        const houseBlock2 = new HouseBlock(this, {
+            position: new Vector(150, 350),
+            width: 100,
+            height: 200
+        })
+        this.em.entities.set(houseBlock2.id, houseBlock2);
 
     }
 
@@ -236,7 +246,7 @@ export class World {
                     return false
                 }
                 const buildingStats = <BuildingStatsComponent>entity.getComponent('BUILDING-STATS');
-                if (pos.position.equals(position) && buildingStats.type === type) {
+                if (pos.position.equals(position) && buildingStats && buildingStats.type === type) {
                     return true
                 }
             });

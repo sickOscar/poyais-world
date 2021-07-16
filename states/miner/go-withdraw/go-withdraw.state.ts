@@ -20,7 +20,12 @@ export class GoWithdraw extends WalkingTo implements IState {
 
     enter(entity:Miner) {
         const bank = entity.locateClosestBuilding(BuildingTypes.BANK);
-        (<MovementComponent>entity.getComponent("MOVEMENT")).seekOn(bank);
+        const movement = <MovementComponent>entity.getComponent("MOVEMENT");
+
+        if (movement && bank) {
+            movement.arriveOn(bank);
+        }
+
     }
 
     execute(entity:Miner) {
@@ -30,7 +35,7 @@ export class GoWithdraw extends WalkingTo implements IState {
         const positionComponent = <PositionComponent>entity.getComponent('POSITION');
         const movementComponent = <MovementComponent>entity.getComponent('MOVEMENT');
 
-        if (movementComponent.seekTarget && Vector.distance(movementComponent.seekTarget, positionComponent.position) < 1) {
+        if (movementComponent.arriveTarget && Vector.distance(movementComponent.arriveTarget, positionComponent.position) < 1) {
 
             const hasMoneyComponent = <HasMoneyToSpendComponent>entity.getComponent('MONEY-TO-SPEND');
             const withdrawRes= Bank.withdrawFromAccount(entity.id, 50);

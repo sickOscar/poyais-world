@@ -22,12 +22,19 @@ export class DrinkingInTavernState extends State implements IState {
 
         const tPos = entity.locateClosestBuilding(BuildingTypes.TAVERN);
 
-        const tavern = worldComponent.world.locateBuildingAtPosition(tPos, BuildingTypes.TAVERN);
-        if (tavern) {
-            entity.addComponent(new IsInBuildingComponent(tavern))
+        if (tPos) {
+            const tavern = worldComponent.world.locateBuildingAtPosition(tPos, BuildingTypes.TAVERN);
+            if (tavern) {
+                entity.addComponent(new IsInBuildingComponent(tavern))
+            }
+
+            movementComponent.arriveOff();
+        } else {
+            const sm = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
+            sm.getFSM().revert()
         }
 
-        movementComponent.seekOff();
+
 
     }
 

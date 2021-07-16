@@ -22,7 +22,7 @@ export class GoDeposit extends WalkingTo implements IState {
 
     enter(entity:Miner) {
         const bank = entity.locateClosestBuilding(BuildingTypes.BANK);
-        (<MovementComponent>entity.getComponent("MOVEMENT")).seekOn(bank);
+        (<MovementComponent>entity.getComponent("MOVEMENT")).arriveOn(bank);
     }
 
     execute(entity:Miner) {
@@ -32,11 +32,11 @@ export class GoDeposit extends WalkingTo implements IState {
         const positionComponent = <PositionComponent>entity.getComponent('POSITION');
         const movementComponent = <MovementComponent>entity.getComponent('MOVEMENT');
 
-        if (movementComponent.seekTarget && Vector.distance(movementComponent.seekTarget, positionComponent.position) < 1) {
+        if (movementComponent.arriveTarget && Vector.distance(movementComponent.arriveTarget, positionComponent.position) < 1) {
 
             const worldComponent = <WorldRefComponent>entity.getComponent('WORLD-REF');
 
-            const building = worldComponent.world.locateBuildingAtPosition(movementComponent.seekTarget, BuildingTypes.BANK);
+            const building = worldComponent.world.locateBuildingAtPosition(movementComponent.arriveTarget, BuildingTypes.BANK);
             if (building) {
                 entity.addComponent(new IsInBuildingComponent(building))
             }
@@ -59,7 +59,7 @@ export class GoDeposit extends WalkingTo implements IState {
 
                 if (!depositRest) {
                     // CAPITALISM AT IT'S FINEST, if it doesn't have a bank account DIE
-                    movementComponent.seekOff();
+                    movementComponent.arriveOff();
                     stateMachineComponent.getFSM().changeGlobalState(new DiedState());
                     return;
                 }
@@ -74,7 +74,7 @@ export class GoDeposit extends WalkingTo implements IState {
                     }
 
                 } else {
-                    movementComponent.seekOff();
+                    movementComponent.arriveOff();
                     stateMachineComponent.getFSM().revert();
                 }
 

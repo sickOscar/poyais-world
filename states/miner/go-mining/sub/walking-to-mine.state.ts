@@ -16,7 +16,14 @@ export class WalkingToMineState extends WalkingTo implements IState {
     enter(entity:Miner) {
         const mine = entity.locateClosestBuilding(BuildingTypes.MINE);
         const movementComponent = <MovementComponent>entity.getComponent('MOVEMENT');
-        movementComponent.seekOn(mine);
+
+        if (mine && movementComponent) {
+            movementComponent.arriveOn(mine);
+        } else {
+            const sm = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
+            sm.getFSM().revert();
+        }
+
     }
 
     execute(entity:Miner) {
@@ -25,7 +32,7 @@ export class WalkingToMineState extends WalkingTo implements IState {
         const movementComponent = <MovementComponent>entity.getComponent('MOVEMENT');
 
 
-        if (movementComponent.seekTarget && Vector.distance(positionComponent.position, movementComponent.seekTarget) < 1) {
+        if (movementComponent.arriveTarget && Vector.distance(positionComponent.position, movementComponent.arriveTarget) < 1) {
             const smComponent = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
             const localFsm = smComponent.getFSM().currentState.localFsm;
             localFsm && localFsm.changeState(new MiningState());
@@ -35,7 +42,7 @@ export class WalkingToMineState extends WalkingTo implements IState {
 
     exit(entity:Miner) {
         const movementComponent = <MovementComponent>entity.getComponent('MOVEMENT');
-        movementComponent && movementComponent.seekOff();
+        movementComponent && movementComponent.arriveOff();
     }
 
     onMessage(owner:any, telegram:Telegram):boolean {

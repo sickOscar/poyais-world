@@ -2,7 +2,7 @@
         integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh"
         crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/p5@1.3.1/lib/p5.js"></script>
-
+<style>*, html, body {margin:0; padding: 0}</style>
 <script>
     var socket = io("http://localhost:3000");
 
@@ -17,11 +17,39 @@
         currentState = JSON.parse(data);
     })
 
+    let activeText = "Click something";
+
+    let statusbarHeight = 100;
+
+    const mapWidth = 1500;
+    const mapHeight = 2000;
+
+    let offsetX = 0;
+    let offsetY = 0;
+    let scrollPace = 5;
+
+    let W;
+    let H;
+
+    let watching = null;
+
+    function windowResized() {
+        W = windowWidth;
+        H = windowHeight;
+        resizeCanvas(windowWidth, windowHeight)
+    }
+
+
+
     function setup() {
-        createCanvas(1000, 1000);
+        windowResized()
+        createCanvas(W, H);
     }
 
     function draw() {
+
+        handleMousePos()
+
         background(51);
 
         stroke("white")
@@ -32,43 +60,65 @@
 
                 noStroke();
 
+                if (building.type === "house-block") {
+                    fill('rgba(255, 255, 255, 0.2)');
+                    rect(
+                        offX(building.position[0]) - building.dimensions.width / 2,
+                        offY(building.position[1]) - building.dimensions.height / 2,
+                        building.dimensions.width,
+                        building.dimensions.height
+                    )
+                }
+
                 if (building.type === "tavern") {
                     fill("red");
-                    square(building.position[0] - 20, building.position[1] - 20, 50);
+                    square(offX(building.position[0] - 20), offY(building.position[1] - 20), 50);
                 }
 
                 if (building.type === "house") {
 
-                    fill(`rgba(0,255,0, ${map(building.progress, 0, 100, 0.1, 1)})`);
-                    square(building.position[0] - 10, building.position[1] - 10, 20);
 
+                    if (building.progress < 100) {
+                        fill(`rgba(255, 255, 255, 0.1)`)
+                    } else {
+                        fill(`rgba(0,255,0, ${map(building.progress, 0, 100, 0.1, 1)})`);
+                    }
 
-                    fill("red")
                     rect(
-                        building.position[0] - 10,
-                        building.position[1] - 10,
-                        map(building.progress, 0, 100, 0, 20),
-                        2
-                    )
+                        offX(building.position[0]) - building.dimensions.width / 2,
+                        offY(building.position[1]) - building.dimensions.height / 2,
+                        building.dimensions.width,
+                        building.dimensions.height
+                    );
+
+                    if (building.progress < 100) {
+                        fill("red")
+                        rect(
+                            offX(building.position[0]) - building.dimensions.width / 2,
+                            offY(building.position[1]) - building.dimensions.height / 2,
+                            map(building.progress, 0, 100, 0, building.dimensions.width),
+                            2
+                        )
+                    }
 
 
                 }
 
                 if (building.type === "bank") {
                     fill("orange");
-                    square(building.position[0] - 10, building.position[1] - 10, 40);
+                    square(offX(building.position[0] - 10), offY(building.position[1] - 10), 40);
                 }
 
                 if (building.type === "mine") {
                     fill("gray");
-                    circle(building.position[0] - 10, building.position[1] - 10, 20);
+                    circle(offX(building.position[0] - 10), offY(building.position[1] - 10), 20);
                 }
 
                 if (building.type === "tree") {
                     fill("brown");
                     circle(
-                        building.position[0] - building.dimensions.radius / 2,
-                        building.position[1] - building.dimensions.radius / 2,
+                        offX(building.position[0] - building.dimensions.radius / 2),
+                        offY(building.position[1] - building.dimensions.radius / 2),
                         building.dimensions.radius
                     )
                 }
@@ -81,11 +131,19 @@
             fill("white")
             noStroke();
 
-            circle(entity.position[0],entity.position[1],10);
+            circle(
+                offX(entity.position[0]),
+                offY(entity.position[1]),
+                map(entity.weight, 80, 120, 5, 15)
+            );
 
             stroke("white")
-            line(entity.position[0],entity.position[1],
-                entity.position[0] + entity.heading[0] *  10,entity.position[1] + entity.heading[1] * 10)
+            line(
+                offX(entity.position[0]),
+                offY(entity.position[1]),
+                offX(entity.position[0]) + entity.heading[0] *  10,
+                offY(entity.position[1]) + entity.heading[1] * 10
+            )
 
 
             noStroke();
@@ -94,21 +152,126 @@
                 const radius = entity.wandering.radius;
                 const target = entity.wandering.target;
 
-                const radiusCircleCenter = createVector(entity.heading[0], entity.heading[1]).normalize().mult(distance);
+                const radiusCircleCenter = createVector(offX(entity.heading[0]), offY(entity.heading[1])).normalize().mult(distance);
 
                 noFill();
                 stroke("purple");
-                circle(entity.position[0] + radiusCircleCenter.x, entity.position[1] + radiusCircleCenter.y, radius)
+                circle(offX(entity.position[0] + radiusCircleCenter.x), offY(entity.position[1] + radiusCircleCenter.y), radius)
 
                 fill("yellow");
                 noStroke();
-                circle(target[0], target[1], 5);
+                circle(offX(target[0]), offY(target[1]), 5);
 
             }
 
         })
 
+        drawStatusBar()
+    }
+
+    function offX(val) {
+        return val - offsetX;
+    }
+
+    function offY(val) {
+        return val - offsetY;
+    }
+
+    function mouseClicked() {
+
+        const houseWidth = 20;
+        const houseHeight = 20;
+
+        // checkCollisions
+        for (let i = 0; i < initialState.length; i++) {
+            const entity = initialState[i];
+            switch (entity.type) {
+                case "house":
+                    if (
+                        mouseX + offsetX > entity.position[0] - houseWidth / 2
+                         && mouseX + offsetX < entity.position[0] + houseWidth / 2
+                        && mouseY + offsetY > entity.position[1] - houseHeight / 2
+                        && mouseY + offsetY < entity.position[1] + houseHeight / 2
+                    ) {
+                        watching = entity.id;
+                    }
+                    break;
+                case "tree":
+                    if (
+                        dist(
+                            mouseX + offsetX, mouseY + offsetY,
+                            entity.position[0], entity.position[1]
+                        ) < entity.dimensions.radius)
+                    {
+                        watching = entity.id;
+                    }
+                    break;
+                case "mine":
+                    if (
+                        dist(
+                            mouseX + offsetX, mouseY + offsetY,
+                            entity.position[0], entity.position[1]
+                        ) < entity.dimensions.radius)
+                    {
+                        watching = entity.id;
+                    }
+                    break;
+                default:
+                    // watching = null;
+            }
+        }
 
     }
+
+    function handleMousePos() {
+        const sensible = 100;
+
+        if (mouseX < sensible && mouseX > 0) {
+            offsetX = Math.max(0, offsetX - scrollPace);
+        }
+        if (mouseX > W - sensible && mouseX < W) {
+            if (mapWidth < W) {
+                return;
+            }
+            offsetX = Math.min(mapWidth - W, offsetX + scrollPace);
+        }
+        if (mouseY < sensible && mouseY > 0) {
+            offsetY = Math.max(0, offsetY - scrollPace);
+        }
+        if (mouseY > H - statusbarHeight - sensible && mouseY < H - statusbarHeight) {
+            if (mapHeight < H) {
+                return;
+            }
+            offsetY = Math.min(mapHeight - H, offsetY + scrollPace);
+        }
+    }
+
+    function updateActiveText() {
+        if (watching) {
+            const en = initialState.find(en => en.id === watching)
+            if (en)
+                activeText = JSON.stringify(en)
+            else
+                activeText = ''
+        }
+    }
+
+    function drawStatusBar() {
+
+        updateActiveText();
+
+        fill("black");
+        noStroke();
+        rect(0, H - statusbarHeight, W, statusbarHeight)
+
+        fill("white");
+        textSize(20);
+        text(activeText, 30, relativeToStatus(20));
+    }
+
+    function relativeToStatus(y) {
+        return  H - statusbarHeight + y;
+    }
+
 
 </script>

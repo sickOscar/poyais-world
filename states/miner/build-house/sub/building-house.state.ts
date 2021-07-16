@@ -8,6 +8,9 @@ import {HasBagComponent} from "../../../../components/has-bag.component";
 import {BuildableComponent} from "../../../../components/buildable.component";
 import {StateMachineComponent} from "../../../../components/state-machine.component";
 import {GoLumberjackingState} from "../../go-lumberjacking/go-lumberjacking.state";
+import {GoMiningState} from "../../go-mining/go-mining.state";
+import {GoDrinkingState} from "../../go-drinking/go-drinking.state";
+import {WanderOutsideState} from "../../go-wandering/wander-outside.state";
 
 export class BuildingHouseState extends State implements IState {
 
@@ -17,17 +20,22 @@ export class BuildingHouseState extends State implements IState {
         const hasHouse = <HasHouseComponent>entity.getComponent('HAS-HOUSE');
 
         if (!hasHouse) {
-            const housePosition = entity.locatePlaceToBuildHouse();
-            const worldRef = <WorldRefComponent>entity.getComponent('WORLD-REF');
 
-            const house = new House(worldRef.world, {
-                position: housePosition
-            })
-            worldRef.world.em.entities.set(house.id, house);
-            house.addComponent(new BuildableComponent());
+            const desiredWidth = 10 + Math.round(Math.random() * 20);
+            const desiredHeight = 10 + Math.round(Math.random() * 20);
 
-            entity.addComponent(new HasHouseComponent(house))
-            return;
+            const houseLocation = entity.locatePlaceToBuildHouse(desiredWidth, desiredHeight);
+
+            if (houseLocation) {
+                const house = houseLocation[0].buildHouse(houseLocation[1], houseLocation[2], houseLocation[3]);
+                entity.addComponent(new HasHouseComponent(house))
+                return;
+            }
+
+            // if no space four house found
+            const sm = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
+            sm.getFSM().changeState(new WanderOutsideState());
+            // sm.getFSM().changeState(new GoMiningState());
         }
 
     }
@@ -45,7 +53,7 @@ export class BuildingHouseState extends State implements IState {
 
                 const consume = 1;
 
-                buildable.progress = Math.min(100, buildable.progress + (consume * delta));
+                buildable.progress = Math.min(100, buildable.progress + (consume * 3 * delta));
                 bag.wood = Math.max(0, bag.wood - (consume * delta));
 
             }

@@ -79,7 +79,6 @@ export class HumanStatsComponent implements Component {
     age: number;
     maxAge: number;
     health: number;
-    weight: number;
     height: number;
     fatigue: number;
     fatigueThreshold:number;
@@ -98,7 +97,6 @@ export class HumanStatsComponent implements Component {
         this.age = 0;
         this.maxAge = 100 + Math.round(Math.random() * 20);
         this.health = 50 + Math.round(Math.random() * 100);
-        this.weight = 50 + Math.round(Math.random() * 100)
         this.height = 100 + Math.round(Math.random() * 50);
         this.fatigue = 0;
         this.fatigueThreshold = 100;
