@@ -48,7 +48,7 @@ export class MovementComponent implements Component {
         const mass = <MassComponent>entity.getComponent('MASS');
         if (mass) {
             this.mass = 100 / mass.weight
-            this.maxSpeed = (1 / this.mass) * 80;
+            this.maxSpeed = this.mass * 80;
         } else {
             this.mass = 1;
             this.maxSpeed = 80

@@ -6,6 +6,7 @@ import {WorldRefComponent} from "../components/world-ref.component";
 import {TreeLifecycleComponent} from "../components/tree-lifecycle.component";
 import {DimensionsComponent} from "../components/dimensions.component";
 import {BuildingStatsComponent, BuildingTypes} from "../components/building-stats.component";
+import {round} from "../abstract/geometry/numbers";
 
 export interface TreeOptions {
     position: Vector,
@@ -29,7 +30,7 @@ export class Tree extends GameEntity {
             .addComponent(new WorldRefComponent(world))
             .addComponent(life)
             .addComponent(new DimensionsComponent({
-                radius: 4 + (life.age / 1000) * 15
+                radius: 4 + (life.age / 1000) * 5
             }))
 
     }
@@ -49,9 +50,9 @@ export class Tree extends GameEntity {
         const exportBuilding:Partial<ExportBuildingEntity> = {}
 
         exportBuilding.dimensions = {
-            radius: dimensionsComponent.radius
+            radius: dimensionsComponent.radius ? Math.round(dimensionsComponent.radius) : 0
         };
-        exportBuilding.availability = life.availability;
+        exportBuilding.availability = round(life.availability);
 
         return Object.assign({}, exportEntity, exportBuilding);
 
@@ -61,7 +62,7 @@ export class Tree extends GameEntity {
         const dimensionsComponent = <DimensionsComponent>this.getComponent('DIMENSIONS')
         const life = <TreeLifecycleComponent>this.getComponent('TREE-LIFECYCLE');
         if (dimensionsComponent) {
-            dimensionsComponent.radius = 4 + (life.age / 1000) * 15;
+            dimensionsComponent.radius = 4 + (life.age / 1000) * 5;
         }
     }
 

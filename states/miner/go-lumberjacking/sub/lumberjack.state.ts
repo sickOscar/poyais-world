@@ -9,8 +9,6 @@ import {HasBagComponent} from "../../../../components/has-bag.component";
 import {BuildingTypes} from "../../../../components/building-stats.component";
 import {Tree} from "../../../../entities/tree";
 import {TreeLifecycleComponent} from "../../../../components/tree-lifecycle.component";
-import {Vector} from "../../../../abstract/geometry/vector";
-import {PositionComponent} from "../../../../components/position.component";
 import {WalkToTreeState} from "./walk-to-tree.state";
 
 export class LumberjackState extends State implements IState {
@@ -23,24 +21,26 @@ export class LumberjackState extends State implements IState {
     tree:Tree | null = null;
 
     enter(entity:Miner) {
-        const closestTreePosition = entity.locateClosestBuilding(BuildingTypes.TREE);
+        const closestTreePosition = entity.locateClosestBuilding(BuildingTypes.TREE, {considerCutting: false});
         const sm = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
+        const localFsm = sm.getFSM().currentState.localFsm;
 
         if (!closestTreePosition) {
-            sm.getFSM().revert();
+            localFsm && localFsm.changeState(new WalkToTreeState());
             return;
         }
-
-        const position = <PositionComponent>entity.getComponent('POSITION');
-
-        if (Vector.distance(closestTreePosition, position.position) > 0.1) {
-            const localFsm = sm.getFSM().currentState.localFsm;
-            localFsm && localFsm.changeState(new WalkToTreeState())
-            return;
-        }
-
         const world = <WorldRefComponent>entity.getComponent('WORLD-REF');
-        this.tree = <Tree>world.world.locateBuildingAtPosition(closestTreePosition, BuildingTypes.TREE);
+        const localTree = <Tree>world.world.locateBuildingAtPosition(closestTreePosition, BuildingTypes.TREE);
+        const life = <TreeLifecycleComponent>localTree.getComponent('TREE-LIFECYCLE');
+
+        if (life.cutting >= life.maxCutting) {
+            localFsm && localFsm.changeState(new WalkToTreeState());
+            return;
+        }
+
+        this.tree = localTree;
+        life.cutting = life.cutting + 1;
+
     }
 
     execute(entity:Miner) {
@@ -63,6 +63,11 @@ export class LumberjackState extends State implements IState {
                 const life = <TreeLifecycleComponent>this.tree.getComponent('TREE-LIFECYCLE');
                 life.availability = Math.max(0, life.availability - 1 * delta / 2)
 
+                // if (life.cutting >= life.maxCutting) {
+                //     const localFsm = stateMachine.getFSM().currentState.localFsm;
+                //     localFsm && localFsm.changeState(new WalkToTreeState());
+                // }
+
                 if (life.availability > 0 && hasBag.wood < hasBag.maxWood) {
                     hasBag.wood += 1 * delta / 2;
                 } else if (hasBag.wood < hasBag.maxWood) {
@@ -73,7 +78,6 @@ export class LumberjackState extends State implements IState {
             } else {
                 const localFsm = stateMachine.getFSM().currentState.localFsm;
                 localFsm && localFsm.changeState(new WalkToTreeState());
-                // this.timePassedLumberjack = this.maxTimeLumberjack;
             }
         }
 
@@ -86,6 +90,11 @@ export class LumberjackState extends State implements IState {
     }
 
     exit(entity:Miner) {
+        if (this.tree) {
+            const life = <TreeLifecycleComponent>this.tree.getComponent('TREE-LIFECYCLE');
+            life.cutting = Math.max(life.cutting - 1, 0);
+            this.tree = null;
+        }
     }
 
     onMessage(owner:any, telegram:Telegram):boolean {

@@ -70,13 +70,33 @@
                     )
                 }
 
+                if (building.type === "farm-block") {
+                    fill('rgba(255, 255, 0, 0.2)');
+                    rect(
+                        offX(building.position[0]) - building.dimensions.width / 2,
+                        offY(building.position[1]) - building.dimensions.height / 2,
+                        building.dimensions.width,
+                        building.dimensions.height
+                    )
+                }
+
+
                 if (building.type === "tavern") {
                     fill("red");
                     square(offX(building.position[0] - 20), offY(building.position[1] - 20), 50);
                 }
 
-                if (building.type === "house") {
+                if (building.type === "farm") {
+                    fill('rgba(255, 255, 0, 0.2)');
+                    rect(
+                        offX(building.position[0]) - building.dimensions.width / 2,
+                        offY(building.position[1]) - building.dimensions.height / 2,
+                        building.dimensions.width,
+                        building.dimensions.height
+                    )
+                }
 
+                if (building.type === "house") {
 
                     if (building.progress < 100) {
                         fill(`rgba(255, 255, 255, 0.1)`)
@@ -111,7 +131,11 @@
 
                 if (building.type === "mine") {
                     fill("gray");
-                    circle(offX(building.position[0] - 10), offY(building.position[1] - 10), 20);
+                    circle(
+                        offX(building.position[0] - 10),
+                        offY(building.position[1] - 10),
+                        building.dimensions.radius * 2
+                    );
                 }
 
                 if (building.type === "tree") {
@@ -119,7 +143,7 @@
                     circle(
                         offX(building.position[0] - building.dimensions.radius / 2),
                         offY(building.position[1] - building.dimensions.radius / 2),
-                        building.dimensions.radius
+                        building.dimensions.radius * 2
                     )
                 }
 
@@ -127,44 +151,49 @@
 
 
         currentState.forEach(entity => {
-            // console.log(entity)
-            fill("white")
-            noStroke();
 
-            circle(
-                offX(entity.position[0]),
-                offY(entity.position[1]),
-                map(entity.weight, 80, 120, 5, 15)
-            );
-
-            stroke("white")
-            line(
-                offX(entity.position[0]),
-                offY(entity.position[1]),
-                offX(entity.position[0]) + entity.heading[0] *  10,
-                offY(entity.position[1]) + entity.heading[1] * 10
-            )
-
-
-            noStroke();
-            if (entity.wandering) {
-                const distance = entity.wandering.distance;
-                const radius = entity.wandering.radius;
-                const target = entity.wandering.target;
-
-                const radiusCircleCenter = createVector(offX(entity.heading[0]), offY(entity.heading[1])).normalize().mult(distance);
-
-                noFill();
-                stroke("purple");
-                circle(offX(entity.position[0] + radiusCircleCenter.x), offY(entity.position[1] + radiusCircleCenter.y), radius)
-
-                fill("yellow");
+            if (entity.type === 'human') {
+                const fillColor = entity.gender === 'M' ? '#B5E0F1' : '#FFC0CB'
+                fill(fillColor)
                 noStroke();
-                circle(offX(target[0]), offY(target[1]), 5);
 
+                circle(
+                    offX(entity.position[0]),
+                    offY(entity.position[1]),
+                    map(entity.weight, 80, 120, 5, 15)
+                );
+
+                stroke("white")
+                line(
+                    offX(entity.position[0]),
+                    offY(entity.position[1]),
+                    offX(entity.position[0]) + entity.heading[0] *  10,
+                    offY(entity.position[1]) + entity.heading[1] * 10
+                )
+
+
+                noStroke();
+                if (entity.wandering) {
+                    const distance = entity.wandering.distance;
+                    const radius = entity.wandering.radius;
+                    const target = entity.wandering.target;
+
+                    const radiusCircleCenter = createVector(offX(entity.heading[0]), offY(entity.heading[1])).normalize().mult(distance);
+
+                    noFill();
+                    stroke("purple");
+                    circle(offX(entity.position[0] + radiusCircleCenter.x), offY(entity.position[1] + radiusCircleCenter.y), radius)
+
+                    fill("yellow");
+                    noStroke();
+                    circle(offX(target[0]), offY(target[1]), 5);
+
+                }
             }
 
         })
+
+        drawEntityHighlight();
 
         drawStatusBar()
     }
@@ -177,15 +206,40 @@
         return val - offsetY;
     }
 
+    function drawEntityHighlight() {
+        // noFill();
+        // stroke("white");
+        // rect(
+        //     watching.position[0],
+        //     watching.position[1],
+        //     50, 50
+        // )
+    }
+
     function mouseClicked() {
 
         const houseWidth = 20;
         const houseHeight = 20;
 
         // checkCollisions
-        for (let i = 0; i < initialState.length; i++) {
+        for (let i = 0; i < initialState.concat(currentState).length; i++) {
             const entity = initialState[i];
+            if (!entity) continue;
             switch (entity.type) {
+
+                case "human":
+                    const diameter = map(entity.weight, 80, 120, 5, 15);
+
+                    if (
+                        dist(
+                            mouseX + offsetX,
+                            mouseY + offsetY,
+                            entity.position[0],
+                            entity.position[1]) < (diameter / 2)
+                    ) {
+                        watching = entity.id
+                    }
+                    break;
                 case "house":
                     if (
                         mouseX + offsetX > entity.position[0] - houseWidth / 2
@@ -221,6 +275,8 @@
             }
         }
 
+
+
     }
 
     function handleMousePos() {
@@ -248,7 +304,7 @@
 
     function updateActiveText() {
         if (watching) {
-            const en = initialState.find(en => en.id === watching)
+            const en = initialState.concat(currentState).find(en => en.id === watching)
             if (en)
                 activeText = JSON.stringify(en)
             else

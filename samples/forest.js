@@ -59,7 +59,6 @@ Forest.prototype.checkCollisions = function() {
 
             if (distance < (sumOfRadi * distanceFactor)) {
                 this.forest[j] = null;
-                console.log('colliding')
             }
         }
     }

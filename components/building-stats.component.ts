@@ -6,7 +6,9 @@ export enum BuildingTypes {
     HOUSE = "HOUSE",
     BANK = "BANK",
     MINE = "MINE",
-    TREE = "TREE"
+    TREE = "TREE",
+    FARM = "FARM",
+    WAREHOUSE = "WAREHOUSE"
 }
 
 

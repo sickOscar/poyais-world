@@ -10,7 +10,7 @@ export class MineLifecycleComponent implements Component {
     regenerationTime:number
     maxRegenerationTime:number;
 
-    constructor(max = 1000, regenerationTime = 12000) {
+    constructor(max = 1000, regenerationTime = 1200) {
         this.maxCapacity = max;
         this.availability = this.maxCapacity;
         this.regenerationTime = regenerationTime;

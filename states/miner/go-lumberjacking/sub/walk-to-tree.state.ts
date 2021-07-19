@@ -32,7 +32,7 @@ export class WalkToTreeState extends WalkingTo implements IState {
         const positionComponent = <PositionComponent>entity.getComponent('POSITION');
         const movementComponent = <MovementComponent>entity.getComponent('MOVEMENT');
 
-        if (movementComponent.arriveTarget && Vector.distance(positionComponent.position, movementComponent.arriveTarget) < 0.1) {
+        if (movementComponent.arriveTarget && Vector.distance(positionComponent.position, movementComponent.arriveTarget) < 0.2) {
             const smComponent = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
             const localFsm = smComponent.getFSM().currentState.localFsm;
             localFsm && localFsm.changeState(new LumberjackState());

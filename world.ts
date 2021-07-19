@@ -2,22 +2,29 @@ import {EntityManager} from "./abstract/ecs/entity-manager";
 import {StateMachineSystem} from "./systems/state-machine.system";
 import {System} from "./abstract/ecs/system";
 import {performance} from "perf_hooks";
-import {Miner} from "./entities/miner";
+import {Jobs, Miner, MinerOptions} from "./entities/miner";
 import {MovementSystem} from "./systems/movement.system";
 import {Tavern} from "./entities/tavern";
 import {GameEntity} from "./abstract/ecs/game-entity";
 import {Vector} from "./abstract/geometry/vector";
-import {House} from "./entities/house";
 import {PositionComponent} from "./components/position.component";
 import {Bank} from "./entities/bank";
 import {Mine} from "./entities/mine";
 import {MinesSystem} from "./systems/mines.system";
 import {BuildingStatsComponent, BuildingTypes} from "./components/building-stats.component";
-import {Tree} from "./entities/tree";
 import {EntityDimensions} from "./components/dimensions.component";
 import {TreesSystem} from "./systems/trees.system";
 import {Forest} from "./entities/forest";
 import {HouseBlock} from "./entities/house-block";
+import {FarmBlock} from "./entities/farm-block";
+import {Farm} from "./entities/farm";
+import {House} from "./entities/house";
+import {FarmerComponent} from "./components/farmer.component";
+import {BuildableComponent} from "./components/buildable.component";
+import {Gender} from "./components/human-stats.component";
+import {OwnershipSystem} from "./systems/ownership.system";
+import {Tree} from "./entities/tree";
+import {TreeLifecycleComponent} from "./components/tree-lifecycle.component";
 
 
 export interface ExportEntity {
@@ -29,6 +36,12 @@ export interface ExportEntity {
     dimensions?: EntityDimensions
 }
 
+export type ExportBag = {
+    gold: number,
+    wood: number,
+    malt: number
+}
+
 export type ExportHumanEntity = ExportEntity &  {
     heading: [number, number],
     wandering?: {
@@ -36,7 +49,9 @@ export type ExportHumanEntity = ExportEntity &  {
         radius: number,
         target: [number, number]
     },
-    weight?: number
+    weight?: number,
+    gender: Gender
+    bag?: ExportBag
 }
 
 export type ExportBuildingEntity = ExportEntity & {
@@ -64,27 +79,48 @@ export class World {
 
     constructor() {
 
-        this.addTrees();
-
         this.addMines();
 
         this.addHouseBlocks();
 
-        this.addMiners();
+        this.addFarmBlocks()
 
+        this.addTrees();
+
+        // const tr = new Tree(this, {
+        //     position: new Vector(350, 350)
+        // })
+        // const life = <TreeLifecycleComponent>tr.getComponent('TREE-LIFECYCLE')
+        // life.cutting = 1;
+        // this.em.entities.set(tr.id, tr);
+        //
+        // const tr1 = new Tree(this, {
+        //     position: new Vector(360, 360)
+        // })
+        // this.em.entities.set(tr1.id, tr1);
+        //
+        // const tr2 = new Tree(this, {
+        //     position: new Vector(380, 760)
+        // })
+        // this.em.entities.set(tr2.id, tr2);
+        //
+        //
+        // this.createRandomMiner(1, 1);
+        // this.createRandomMiner(2, 2);
+
+
+
+
+
+        this.addMiners();
+        // this.createRandomMiner();
+        // this.createFarmDemo();
 
         const bank = new Bank(this, {
             position: new Vector(500, 100),
             name: "That old bank"
         })
         this.em.entities.set(bank.id, bank);
-
-        // const miner2 = new Miner(this, {
-        //     position: new Vector(100, 150),
-        //     // house: house2
-        // });
-        // this.em.entities.set(miner2.id, miner2);
-        // Bank.addAccount(miner2.id, Math.random() * 50);
 
         const tavern = new Tavern(this, {
             position: new Vector(300, 300),
@@ -110,32 +146,41 @@ export class World {
         const treesSystem = new TreesSystem(this);
         this.systems.set('TREES-SYSTEM', treesSystem);
 
+        const ownershipSystem = new OwnershipSystem(this);
+        this.systems.set('OWNERSHIP-SYSTEM', ownershipSystem);
+
         this.update(0);
+    }
+
+    removeEntity(id:number) {
+        this.em.entities.delete(id);
+    }
+
+    createRandomMiner(x?:number, y?:number) {
+        const options:Partial<MinerOptions> = {
+            position: new Vector(
+                x || Math.round(Math.random() * 700),
+                y || Math.round(Math.random() * 500)
+            )
+        }
+
+        if (Math.random() < 0.3) {
+            options.job = Jobs.FARMER
+        }
+
+        const miner = new Miner(this, options);
+        this.em.entities.set(miner.id, miner);
+
+        Bank.addAccount(miner.id, Math.random() * 50);
     }
 
     addMiners() {
         for (let i = 0; i < 5; i++) {
-            const miner = new Miner(this, {
-                position: new Vector(
-                    Math.round(Math.random() * 700),
-                    Math.round(Math.random() * 500)
-                ),
-                // house: house
-            });
-            this.em.entities.set(miner.id, miner);
-            Bank.addAccount(miner.id, Math.random() * 50);
+            this.createRandomMiner()
         }
 
         setInterval(() => {
-            const miner = new Miner(this, {
-                position: new Vector(
-                    Math.round(Math.random() * 700),
-                    Math.round(Math.random() * 500)
-                ),
-                // house: house
-            });
-            this.em.entities.set(miner.id, miner);
-            Bank.addAccount(miner.id, Math.random() * 50);
+            this.createRandomMiner();
         }, 5000)
     }
 
@@ -152,11 +197,50 @@ export class World {
 
     }
 
+
+    createFarmDemo() {
+
+        const house = new House(this, {
+            position: new Vector(400, 400),
+            width: 30,
+            height: 30
+        })
+        house.addComponent(new BuildableComponent());
+        const buildable = <BuildableComponent>house.getComponent('BUILDABLE');
+        buildable.progress = 100;
+        this.em.entities.set(house.id, house);
+
+        const options:Partial<MinerOptions> = {
+            position: new Vector(
+                Math.round(Math.random() * 700),
+                Math.round(Math.random() * 500)
+            ),
+            house: house
+        }
+        options.job = Jobs.FARMER
+
+        const miner = new Miner(this, options);
+        this.em.entities.set(miner.id, miner);
+
+        const farm = new Farm(this, {
+            position: new Vector(400, 400),
+            width: 100,
+            height: 100
+        })
+        this.em.entities.set(farm.id, farm);
+        farm.house = house;
+
+        const farmer = <FarmerComponent>miner.getComponent('FARMER')
+        farmer.farm = farm;
+
+        Bank.addAccount(miner.id, Math.random() * 50);
+    }
+
     addTrees() {
 
         const f = new Forest(this, {
             distribution: 'ROUND',
-            center: new Vector(700, 300),
+            center: new Vector(700, 100),
             radius: 70,
             trees: 15,
             minRadius: 5,
@@ -176,6 +260,15 @@ export class World {
 
     }
 
+    addFarmBlocks() {
+        const farmBlock = new FarmBlock(this, {
+            position: new Vector(700, 400),
+            width: 200,
+            height: 400
+        })
+        this.em.entities.set(farmBlock.id, farmBlock);
+    }
+
     addHouseBlocks() {
 
         const houseBlock = new HouseBlock(this, {
@@ -191,6 +284,13 @@ export class World {
             height: 200
         })
         this.em.entities.set(houseBlock2.id, houseBlock2);
+
+        const houseBlock3 = new HouseBlock(this, {
+            position: new Vector(950, 350),
+            width: 50,
+            height: 400
+        })
+        this.em.entities.set(houseBlock3.id, houseBlock3);
 
     }
 
@@ -227,7 +327,7 @@ export class World {
     }
 
     validatePositionAgainstMap(position: Vector): boolean {
-        return position.x > 0 && position.x < 1000 && position.y > 0 && position.y < 1000;
+        return position.x > 0 && position.x < 10000 && position.y > 0 && position.y < 10000;
     }
 
     locateBuildingAtPosition(position: Vector, type: BuildingTypes): GameEntity | undefined {

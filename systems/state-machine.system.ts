@@ -14,10 +14,11 @@ export class StateMachineSystem implements System {
     update(delta:number, time:number) {
         this.world.em.entities.forEach((entity:GameEntity) => {
 
-            // entity.print();
+
 
             const stateMachineComponent:StateMachineComponent = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
             if (stateMachineComponent) {
+                // entity.print();
                 stateMachineComponent.update();
             }
 

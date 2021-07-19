@@ -2,8 +2,9 @@ import {GameEntity} from "../abstract/ecs/game-entity";
 import {PositionComponent} from "../components/position.component";
 import {Vector} from "../abstract/geometry/vector";
 import {BuildingStatsComponent, BuildingTypes} from "../components/building-stats.component";
-import {ExportEntity, World} from "../world";
+import {ExportBuildingEntity, ExportEntity, World} from "../world";
 import {WorldRefComponent} from "../components/world-ref.component";
+import {DimensionsComponent} from "../components/dimensions.component";
 
 export interface BankOptions {
     position: Vector,
@@ -26,6 +27,10 @@ export class Bank extends GameEntity {
         this.addComponent(positionComponent)
             .addComponent(new BuildingStatsComponent(BuildingTypes.BANK, options.name))
             .addComponent(new WorldRefComponent(world))
+            .addComponent(new DimensionsComponent({
+                width: 60,
+                height: 60
+            }))
 
     }
 
@@ -87,18 +92,27 @@ export class Bank extends GameEntity {
 
     }
 
-    export():ExportEntity {
+    export():ExportBuildingEntity {
         const positionComponent = <PositionComponent>this.getComponent('POSITION');
         const buildingStats = <BuildingStatsComponent>this.getComponent('BUILDING-STATS');
+        const dimensions = <DimensionsComponent>this.getComponent('DIMENSIONS');
 
         const exportEntity:ExportEntity = {
             id: this.id,
             name: buildingStats.buildingName,
             type: 'bank',
             position: [positionComponent.position.x, positionComponent.position.y],
+            dimensions: {
+                width: dimensions.width,
+                height: dimensions.height
+            }
         }
 
-        return exportEntity;
+        const buildingExport:ExportBuildingEntity = {
+            ...exportEntity
+        }
+
+        return buildingExport;
 
     }
 

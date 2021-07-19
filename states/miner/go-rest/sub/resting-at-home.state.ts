@@ -3,16 +3,13 @@ import {Miner} from "../../../../entities/miner";
 import {Telegram} from "../../../../abstract/messaging/telegram";
 import {HumanStatsComponent} from "../../../../components/human-stats.component";
 import {StateMachineComponent} from "../../../../components/state-machine.component";
-import {WalkingToTavernState} from "../../go-drinking/sub/walking-to-tavern.state";
 import {StateMachine} from "../../../../abstract/fsm/state-machine";
 import {WorldRefComponent} from "../../../../components/world-ref.component";
-import {MovementComponent} from "../../../../components/movement.component";
-import {Vector} from "../../../../abstract/geometry/vector";
 import {WanderOutsideState} from "../../go-wandering/wander-outside.state";
 import {GoDrinkingState} from "../../go-drinking/go-drinking.state";
 import {IsInBuildingComponent} from "../../../../components/is-in-building.component";
-import {BuildingTypes} from "../../../../components/building-stats.component";
 import {HasHouseComponent} from "../../../../components/has-house.component";
+import {FarmerComponent} from "../../../../components/farmer.component";
 
 export class RestingAtHomeState extends State implements IState {
 
@@ -35,6 +32,8 @@ export class RestingAtHomeState extends State implements IState {
         const delta = worldComponent.world.frame.deltaTime;
         const stateMachineComponent = <StateMachineComponent>entity.getComponent('STATE-MACHINE')
         const fsm = <StateMachine>stateMachineComponent.getFSM();
+        const farmer = <FarmerComponent>entity.getComponent('FARMER')
+
 
         humanStats.boredom += 1 * delta;
         humanStats.thirst += 1 * delta;
@@ -46,13 +45,8 @@ export class RestingAtHomeState extends State implements IState {
 
         // wander if bored
         if (humanStats.boredom >= humanStats.maxBoredom) {
+            humanStats.boredom = 0;
             fsm.changeState(new WanderOutsideState());
-            return;
-        }
-
-        // go to tavern if thirsty
-        if (humanStats.thirst >= humanStats.thirstThreshold) {
-            fsm.changeState(new GoDrinkingState());
             return;
         }
 

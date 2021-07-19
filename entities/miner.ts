@@ -10,7 +10,6 @@ import {ExportEntity, ExportHumanEntity, World} from "../world";
 import {Vector} from "../abstract/geometry/vector";
 import {BuildingStatsComponent, BuildingTypes} from "../components/building-stats.component";
 import {HasMoneyToSpendComponent} from "../components/has-money-to-spend.component";
-import {DiedState} from "../states/miner/died.state";
 import {HasHouseComponent} from "../components/has-house.component";
 import {HasBagComponent} from "../components/has-bag.component";
 import {Bank} from "./bank";
@@ -24,16 +23,34 @@ import {HouseBlockComponent} from "../components/house-block.component";
 import {TreeLifecycleComponent} from "../components/tree-lifecycle.component";
 import {MineLifecycleComponent} from "../components/mine-lifecycle.component";
 import {MassComponent} from "../components/mass.component";
+import {FarmerComponent} from "../components/farmer.component";
+import {FarmBlockComponent} from "../components/farm-block.component";
+import {FarmBlock} from "./farm-block";
+import {GoDrinkingState} from "../states/miner/go-drinking/go-drinking.state";
+import {GoFarmingState} from "../states/miner/go-farming/go-farming.state";
+import {EmptyState} from "../states/empty-state";
+import {round} from "../abstract/geometry/numbers";
+import {HasOwnerComponent} from "../components/has-owner.component";
+import {Farm} from "./farm";
+
+export enum Jobs {
+    'FARMER' = 0
+}
+
+export interface ClosestBuildingOptions {
+    considerCutting: boolean | true
+}
 
 export interface MinerOptions {
     position?: Vector,
     house?: House,
     initialState?: IState
+    job?: Jobs
 }
 
 export class Miner extends GameEntity {
 
-    constructor(world:World, options:MinerOptions) {
+    constructor(world: World, options: MinerOptions) {
 
         const position = options.position || new Vector(0, 0);
 
@@ -57,6 +74,10 @@ export class Miner extends GameEntity {
             this.addComponent(new HasHouseComponent(options.house))
         }
 
+        if (options.job === Jobs.FARMER) {
+            this.addComponent(new FarmerComponent())
+        }
+
         const stateMachine = new StateMachine(this);
         fsmComponent.setFSM(stateMachine);
         stateMachine.changeState(new GoRest());
@@ -64,16 +85,58 @@ export class Miner extends GameEntity {
 
     }
 
-    locateClosestBuilding(type:BuildingTypes):Vector|null {
+    findEmptyHouse(): House | null {
+        const w = <WorldRefComponent>this.getComponent('WORLD-REF');
+        const ents: [number, GameEntity][] = Array.from(w.world.em.entities);
+        for (let i = 0; i < ents.length; i++) {
+            const entity: GameEntity = ents[i][1];
+            const hb = <HouseBlockComponent>entity.getComponent('HOUSE-BLOCK');
+
+            if (hb) {
+                let block = entity as HouseBlock;
+                for (let j = 0; j < block.houses.length; j++) {
+                    const owner = <HasOwnerComponent>block.houses[j].getComponent('HAS-OWNER');
+                    if (!owner) {
+                        return block.houses[j];
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    findEmptyFarm(): Farm | null {
+        const w = <WorldRefComponent>this.getComponent('WORLD-REF');
+        const ents: [number, GameEntity][] = Array.from(w.world.em.entities);
+        for (let i = 0; i < ents.length; i++) {
+            const entity: GameEntity = ents[i][1];
+            const fb = <HouseBlockComponent>entity.getComponent('FARM-BLOCK');
+
+            if (fb) {
+                let block = entity as FarmBlock;
+                for (let j = 0; j < block.farms.length; j++) {
+                    const h = block.farms[j].house;
+                    if (!h) continue;
+                    const owner = <HasOwnerComponent>h.getComponent('HAS-OWNER');
+                    if (!owner) {
+                        return block.farms[j];
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    locateClosestBuilding(type: BuildingTypes, options?: ClosestBuildingOptions): Vector | null {
 
         const worldRefComponent = <WorldRefComponent>this.getComponent('WORLD-REF')
-        
-        const buildingsOfType:[string, GameEntity][] = (<[string, GameEntity][]>Array.from(worldRefComponent.world.em.entities))
-            .filter(([key, entity]:[string, GameEntity]) => {
+
+        const buildingsOfType: [string, GameEntity][] = (<[string, GameEntity][]>Array.from(worldRefComponent.world.em.entities))
+            .filter(([key, entity]: [string, GameEntity]) => {
                 const buildingComponent = <BuildingStatsComponent>entity.getComponent('BUILDING-STATS');
                 return buildingComponent && buildingComponent.type === type
             })
-        
+
 
         const minerPosition = <PositionComponent>this.getComponent('POSITION');
 
@@ -86,9 +149,14 @@ export class Miner extends GameEntity {
             if (dist < closestDistance) {
 
                 if (type === BuildingTypes.TREE) {
-                    const tree = <TreeLifecycleComponent>building.getComponent('TREE-LIFECYCLE');
-                    if (tree && tree.availability <= 0) {
-                        continue;
+                    const life = <TreeLifecycleComponent>building.getComponent('TREE-LIFECYCLE');
+                    if (life) {
+                        if (life.availability <= 0) continue;
+
+                        if (!options || (options && options.considerCutting)) {
+                            if (life.cutting >= life.maxCutting) continue;
+                        }
+
                     }
                 }
 
@@ -112,17 +180,54 @@ export class Miner extends GameEntity {
 
     }
 
-    locatePlaceToBuildHouse(width:number, height:number):[HouseBlock, Vector, number, number]|null {
+    locatePlaceToBuildHouse(width: number, height: number): [HouseBlock, Vector, number, number] | null {
 
         const w = <WorldRefComponent>this.getComponent('WORLD-REF');
-        const ents:[number, GameEntity][] = Array.from(w.world.em.entities);
+        const ents: [number, GameEntity][] = Array.from(w.world.em.entities);
+
+        const minWidth = 5;
+        const minHeight = 5;
+
+        const houseBlocks = ents
+            .filter(([id, entity]) => {
+                const hb = <HouseBlockComponent>entity.getComponent('HOUSE-BLOCK');
+                return hb;
+            })
+            .sort(() => (Math.random() > .5) ? 1 : -1);
+
+        for (let i = 0; i < houseBlocks.length; i++) {
+            const entity: GameEntity = houseBlocks[i][1];
+
+            let iterations = 0;
+
+            let w = width;
+            let h = height;
+            while (iterations < 10 && w > minWidth && h > minHeight) {
+                const placeFound = (entity as HouseBlock).findSuitablePlace(w, h);
+                if (placeFound) {
+                    return [entity as HouseBlock, placeFound, w, h];
+                }
+                w -= 2;
+                h -= 2;
+                iterations++;
+            }
+
+        }
+
+        return null;
+    }
+
+    locatePlaceToBuildFarm(width: number, height: number): [FarmBlock, Vector, number, number] | null {
+
+        const w = <WorldRefComponent>this.getComponent('WORLD-REF');
+        const ents: [number, GameEntity][] = Array.from(w.world.em.entities);
 
         const minWidth = 5;
         const minHeight = 5;
 
         for (let i = 0; i < ents.length; i++) {
-            const entity:GameEntity = ents[i][1];
-            const hb = <HouseBlockComponent>entity.getComponent('HOUSE-BLOCK');
+            const entity: GameEntity = ents[i][1];
+            const hb = <FarmBlockComponent>entity.getComponent('FARM-BLOCK');
 
             let iterations = 0;
 
@@ -130,60 +235,74 @@ export class Miner extends GameEntity {
                 let w = width;
                 let h = height;
                 while (iterations < 10 && w > minWidth && h > minHeight) {
-                    const placeFound = (entity as HouseBlock).findSuitablePlace(w, h);
+                    const placeFound = (entity as FarmBlock).findSuitablePlace(w, h);
                     if (placeFound) {
-                        return [entity as HouseBlock, placeFound, w, h];
+                        return [entity as FarmBlock, placeFound, w, h];
                     }
                     w -= 2;
                     h -= 2;
                     iterations++;
                 }
-
-
             }
-
-
-
 
         }
 
         return null;
     }
 
-    setPosition(x:number, y:number) {
-        const positionComponent = <PositionComponent>this.getComponent('POSITION');
-        positionComponent.position = new Vector(x, y);
-    }
-
     die() {
-        const stateMachineComponent = <StateMachineComponent>this.getComponent('STATE-MACHINE');
+        const world = <WorldRefComponent>this.getComponent('WORLD-REF');
+        const sm = <StateMachineComponent>this.getComponent('STATE-MACHINE');
 
-        this.removeComponent('HAS-MONEY');
-        this.removeComponent('MOVEMENT');
+        const hasHouse = <HasHouseComponent>this.getComponent('HAS-HOUSE');
+        if (hasHouse && hasHouse.house) {
+            hasHouse.house.removeComponent('HAS-OWNER');
+            this.removeComponent('HAS-HOUSE');
+        }
 
-        stateMachineComponent.getFSM().changeGlobalState(new DiedState())
-        stateMachineComponent.getFSM().changeState(new DiedState());
+        sm.getFSM().changeState(new EmptyState());
+        sm.getFSM().changeGlobalState(new EmptyState());
+
+        world.world.removeEntity(this.id);
     }
 
-    export():ExportHumanEntity {
+    doRandomAction() {
+        const chance = Math.random();
+
+        const fsmComponent = <StateMachineComponent>this.getComponent('STATE-MACHINE');
+        const farmer = <FarmerComponent>this.getComponent('FARMER');
+
+        if (farmer) {
+            fsmComponent.getFSM().changeState(new GoFarmingState());
+            return;
+        }
+
+        fsmComponent.getFSM().changeState(new GoRest());
+        fsmComponent.getFSM().changeState(new GoDrinkingState())
+
+    }
+
+    export(): ExportHumanEntity {
         const humanStatsComponent = <HumanStatsComponent>this.getComponent('HUMAN-STATS');
         const positionComponent = <PositionComponent>this.getComponent('POSITION');
         const movementComponent = <MovementComponent>this.getComponent('MOVEMENT');
         const smComponent = <StateMachineComponent>this.getComponent('STATE-MACHINE');
         const mass = <MassComponent>this.getComponent('MASS');
 
-        const exportEntity:ExportEntity = {
+        const exportEntity: ExportEntity = {
             id: this.id,
             name: humanStatsComponent.characterFullName,
             type: 'human',
             state: smComponent.getFSM().currentState.name,
-            position: [positionComponent.position.x, positionComponent.position.y],
+            position: [round(positionComponent.position.x), round(positionComponent.position.y)],
         }
 
-        const humanEntity:Partial<ExportHumanEntity> = {};
+        const humanEntity: Partial<ExportHumanEntity> = {
+            gender: humanStatsComponent.gender
+        };
 
         if (movementComponent) {
-            humanEntity.heading = [movementComponent.heading.x, movementComponent.heading.y];
+            humanEntity.heading = [round(movementComponent.heading.x), round(movementComponent.heading.y)];
             if (movementComponent.wandering) {
 
                 const targetToWorld = Vector.pointToWorldSpace(
@@ -191,15 +310,22 @@ export class Miner extends GameEntity {
                 )
 
                 humanEntity.wandering = {
-                    distance : movementComponent.wanderDistance,
-                    radius : movementComponent.wanderRadius,
-                    target: [targetToWorld.x, targetToWorld.y]
+                    distance: movementComponent.wanderDistance,
+                    radius: movementComponent.wanderRadius,
+                    target: [round(targetToWorld.x), round(targetToWorld.y)]
                 }
             }
         }
 
         if (mass) {
             humanEntity.weight = mass.weight;
+        }
+
+        const bag = <HasBagComponent>this.getComponent('HAS-BAG')
+        humanEntity.bag = {
+            gold: round(bag.gold),
+            wood: round(bag.wood),
+            malt: round(bag.malt)
         }
 
         return Object.assign({}, exportEntity, humanEntity) as ExportHumanEntity;
@@ -237,20 +363,23 @@ export class Miner extends GameEntity {
             }
         }
 
-        const line = `
-            ${humanStatsComponent.characterName} ${humanStatsComponent.characterSurname} - ${currentStateName} - POS (x: ${positionComponent.position.x} | y: ${positionComponent.position.y})
-            THIRST: ${humanStatsComponent.thirst} / ${humanStatsComponent.maxThirst}
-            FATIGUE: ${humanStatsComponent.fatigue} / ${humanStatsComponent.maxFatigue}
-            BOREDOM: ${humanStatsComponent.boredom} / ${humanStatsComponent.maxBoredom}
-            MONEY: ${hasMoneyComponent.money}
-            AGE: ${humanStatsComponent.age} / ${humanStatsComponent.maxAge}
-            BANK ACCOUNT: ${bankAccount && bankAccount.amount}
-            IN BUILDING: ${inBuilding && inBuilding.building && (<BuildingStatsComponent>inBuilding.building.getComponent('BUILDING-STATS')).type}
-            HOUSE: ${houseValue}
-            BAG
-                GOLD: ${hasBagComponent.gold}
-                WOOD: ${hasBagComponent.wood}
-            `;
+        const line = `${currentStateName}`
+
+        // const line = `
+        //     ${humanStatsComponent.characterName} ${humanStatsComponent.characterSurname} - ${currentStateName} - POS (x: ${positionComponent.position.x} | y: ${positionComponent.position.y})
+        //     THIRST: ${humanStatsComponent.thirst} / ${humanStatsComponent.maxThirst}
+        //     FATIGUE: ${humanStatsComponent.fatigue} / ${humanStatsComponent.maxFatigue}
+        //     BOREDOM: ${humanStatsComponent.boredom} / ${humanStatsComponent.maxBoredom}
+        //     MONEY: ${hasMoneyComponent.money}
+        //     AGE: ${humanStatsComponent.age} / ${humanStatsComponent.maxAge}
+        //     BANK ACCOUNT: ${bankAccount && bankAccount.amount}
+        //     IN BUILDING: ${inBuilding && inBuilding.building && (<BuildingStatsComponent>inBuilding.building.getComponent('BUILDING-STATS')).type}
+        //     HOUSE: ${houseValue}
+        //     BAG
+        //         GOLD: ${hasBagComponent.gold}
+        //         WOOD: ${hasBagComponent.wood}
+        //         MALT: ${hasBagComponent.malt} / ${hasBagComponent.maxMalt}
+        //     `;
 
         process.stdout.clearLine(0);
         process.stdout.cursorTo(0);

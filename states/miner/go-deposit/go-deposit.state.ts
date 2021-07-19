@@ -14,6 +14,8 @@ import {GoMiningState} from "../go-mining/go-mining.state";
 import {IsInBuildingComponent} from "../../../components/is-in-building.component";
 import {WorldRefComponent} from "../../../components/world-ref.component";
 import {GoLumberjackingState} from "../go-lumberjacking/go-lumberjacking.state";
+import {FarmerComponent} from "../../../components/farmer.component";
+import {GoFarmingState} from "../go-farming/go-farming.state";
 
 export class GoDeposit extends WalkingTo implements IState {
 
@@ -22,7 +24,10 @@ export class GoDeposit extends WalkingTo implements IState {
 
     enter(entity:Miner) {
         const bank = entity.locateClosestBuilding(BuildingTypes.BANK);
-        (<MovementComponent>entity.getComponent("MOVEMENT")).arriveOn(bank);
+        const movement = <MovementComponent>entity.getComponent("MOVEMENT")
+        if (bank && movement) {
+            movement.arriveOn(bank)
+        }
     }
 
     execute(entity:Miner) {
@@ -43,7 +48,11 @@ export class GoDeposit extends WalkingTo implements IState {
 
             const hasBagComponent = <HasBagComponent>entity.getComponent('HAS-BAG');
 
-            if (hasBagComponent.gold > 0 || hasBagComponent.wood > 0) {
+            if (
+                hasBagComponent.gold > 0
+                || hasBagComponent.wood > 0
+                || hasBagComponent.malt > 0
+            ) {
 
                 // TODO: conversion gold??
                 let changedMoney = hasBagComponent.gold * 2;
@@ -52,6 +61,9 @@ export class GoDeposit extends WalkingTo implements IState {
                 // TODO conversion wood
                 changedMoney += hasBagComponent.wood * 1;
                 hasBagComponent.wood = 0;
+
+                changedMoney += hasBagComponent.malt * 0.5;
+                hasBagComponent.malt = 0;
 
                 const depositRest = Bank.depositToAccount(entity.id, changedMoney);
 
@@ -64,8 +76,16 @@ export class GoDeposit extends WalkingTo implements IState {
                     return;
                 }
 
+                movementComponent.arriveOff();
+
                 if (depositRest.newAmount < 100) {
                     const chance = Math.random();
+
+                    const farmer = <FarmerComponent>entity.getComponent('FARMER');
+                    if (farmer) {
+                        return stateMachineComponent.getFSM().changeState(new GoFarmingState());
+                    }
+
                     if (chance > 0.5) {
                         // oh no, i don't like me haz no money
                         stateMachineComponent.getFSM().changeState(new GoMiningState())
@@ -74,7 +94,6 @@ export class GoDeposit extends WalkingTo implements IState {
                     }
 
                 } else {
-                    movementComponent.arriveOff();
                     stateMachineComponent.getFSM().revert();
                 }
 

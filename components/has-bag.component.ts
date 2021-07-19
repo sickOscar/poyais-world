@@ -6,14 +6,18 @@ export class HasBagComponent implements Component {
 
     gold:number;
     wood:number;
+    malt:number;
 
     maxWood:number;
+    maxMalt:number;
 
     constructor() {
         this.gold = 0;
         this.wood = 0;
+        this.malt = 0;
 
         this.maxWood = 10;
+        this.maxMalt = 10;
     }
 
 }

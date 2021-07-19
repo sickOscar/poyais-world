@@ -36,7 +36,7 @@ export class Mine extends GameEntity {
 
         const exportEntity: ExportEntity = {
             id: this.id,
-            name: 'Some house',
+            name: 'Gold mine',
             type: 'mine',
             position: [positionComponent.position.x, positionComponent.position.y],
         }

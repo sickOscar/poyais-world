@@ -74,8 +74,8 @@ export class Forest extends GameEntity {
         for (let i = 0; i < this.trees; i++) {
             if (this.forest[i]) continue;
 
-            const x = center.x + radius * Math.random() * Math.cos(Math.PI * 2 / this.trees * i);
-            const y = center.y + radius * Math.random() * Math.sin(Math.PI * 2 / this.trees * i);
+            const x = Math.round(center.x + radius * Math.random() * Math.cos(Math.PI * 2 / this.trees * i));
+            const y = Math.round(center.y + radius * Math.random() * Math.sin(Math.PI * 2 / this.trees * i));
             // const r = this.minRadius + this.treeRadius * Math.random();
 
             this.forest[i] = new Tree(this.world, {
@@ -92,8 +92,8 @@ export class Forest extends GameEntity {
         for (let i = 0; i < this.trees; i++) {
             if (this.forest[i]) continue;
 
-            const x = center.x - radius / 2 + radius * 2 * Math.random();
-            const y = center.y - radius / 2 + radius * 2 * Math.random();
+            const x = Math.round(center.x - radius / 2 + radius * 2 * Math.random());
+            const y = Math.round(center.y - radius / 2 + radius * 2 * Math.random());
             // const r = this.minRadius + this.treeRadius * Math.random();
 
             this.forest[i] = new Tree(this.world, {
@@ -106,8 +106,8 @@ export class Forest extends GameEntity {
     plantTree() {
         const center = <Vector>(<PositionComponent>this.getComponent('POSITION')).position;
         const radius = <number>(<DimensionsComponent>this.getComponent('DIMENSIONS')).radius
-        const x = center.x - radius / 2 + Math.random() * radius;
-        const y = center.y - radius / 2 + Math.random() * radius;;
+        const x = Math.round(center.x - radius / 2 + Math.random() * radius);
+        const y = Math.round(center.y - radius / 2 + Math.random() * radius);
         const t = new Tree(this.world, {
             position: new Vector(x, y)
         })
@@ -161,7 +161,6 @@ export class Forest extends GameEntity {
                 if (distance < (sumOfRadi * distanceFactor)) {
                     // this.forest[j] = null;
                     this.forest.splice(j, 1);
-                    console.log('colliding')
                 }
 
             }

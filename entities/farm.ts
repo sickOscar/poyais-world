@@ -1,34 +1,33 @@
 import {GameEntity} from "../abstract/ecs/game-entity";
-import {PositionComponent} from "../components/position.component";
-import {Vector} from "../abstract/geometry/vector";
-import {BuildingStatsComponent, BuildingTypes} from "../components/building-stats.component";
-import {ExportBuildingEntity, ExportEntity, World} from "../world";
 import {WorldRefComponent} from "../components/world-ref.component";
-import {BuildableComponent} from "../components/buildable.component";
+import {PositionComponent} from "../components/position.component";
+import {ExportBuildingEntity, ExportEntity, World} from "../world";
+import {Vector} from "../abstract/geometry/vector";
 import {DimensionsComponent} from "../components/dimensions.component";
+import {BuildingStatsComponent, BuildingTypes} from "../components/building-stats.component";
+import {BuildableComponent} from "../components/buildable.component";
+import {House} from "./house";
 
-export interface HouseOptions {
-    position: Vector,
-    name?: string,
-    width: number,
+export interface FarmOptions {
+    position:Vector,
+    width:number,
     height: number
 }
 
-export class House extends GameEntity {
+export class Farm extends GameEntity {
 
-    constructor(world:World, options:HouseOptions) {
+    house:House|null = null;
+
+    constructor(world:World, options:FarmOptions) {
         super();
 
-        const positionComponent = new PositionComponent(options.position.x, options.position.y);
-
-        this.addComponent(positionComponent)
-            .addComponent(new BuildingStatsComponent(BuildingTypes.HOUSE, options.name || 'A common house'))
-            .addComponent(new WorldRefComponent(world))
+        this.addComponent(new WorldRefComponent(world))
+            .addComponent(new PositionComponent(options.position.x, options.position.y))
             .addComponent(new DimensionsComponent({
                 width: options.width,
                 height: options.height
             }))
-
+            .addComponent(new BuildingStatsComponent(BuildingTypes.FARM, 'A farm'))
     }
 
     export():ExportBuildingEntity {
@@ -46,7 +45,7 @@ export class House extends GameEntity {
         const exportEntity:ExportEntity = {
             id: this.id,
             name: building.buildingName,
-            type: 'house',
+            type: 'farm',
             position: [positionComponent.position.x, positionComponent.position.y],
         }
 
@@ -61,8 +60,4 @@ export class House extends GameEntity {
         return Object.assign({}, exportEntity, buildingExport);
 
     }
-
-    print() {
-    }
-
 }

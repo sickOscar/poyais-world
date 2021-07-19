@@ -24,6 +24,7 @@ export class LivingState extends State implements IState {
         const currentStateName = fsmComponent.getFSM().currentState.name;
 
         humanStats.age += 1 / 10 * delta;
+        // humanStats.age += 1  * delta;
 
 
         if (

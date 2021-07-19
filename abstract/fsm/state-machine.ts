@@ -1,10 +1,11 @@
 import {Telegram} from "../messaging/telegram";
 import {IState, State} from "./state";
 import {EmptyState} from "../../states/empty-state";
+import {GameEntity} from "../ecs/game-entity";
 
 export class StateMachine {
 
-  owner: any;
+  owner: GameEntity;
   currentState: IState = new EmptyState();
   previousState: IState = new EmptyState();
   globalState: IState = new EmptyState();

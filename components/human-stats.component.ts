@@ -65,8 +65,8 @@ const names = [
 ]
 
 export enum Gender {
-    MALE = 'MALE',
-    FEMALE = 'FEMALE'
+    MALE = 'M',
+    FEMALE = 'F'
 }
 
 export class HumanStatsComponent implements Component {

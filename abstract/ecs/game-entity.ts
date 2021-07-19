@@ -39,6 +39,10 @@ export abstract class GameEntity {
     return this;
   }
 
+  clearComponents() {
+    this.components = new Map();
+  }
+
   print() {
     console.log(JSON.stringify(this));
   }

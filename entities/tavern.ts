@@ -2,8 +2,9 @@ import {GameEntity} from "../abstract/ecs/game-entity";
 import {PositionComponent} from "../components/position.component";
 import {Vector} from "../abstract/geometry/vector";
 import {BuildingStatsComponent, BuildingTypes} from "../components/building-stats.component";
-import {ExportEntity, World} from "../world";
+import {ExportBuildingEntity, ExportEntity, World} from "../world";
 import {WorldRefComponent} from "../components/world-ref.component";
+import {DimensionsComponent} from "../components/dimensions.component";
 
 export interface TavernOptions {
     position: Vector,
@@ -20,18 +21,27 @@ export class Tavern extends GameEntity {
         this.addComponent(positionComponent)
             .addComponent(new BuildingStatsComponent(BuildingTypes.TAVERN, options.name))
             .addComponent(new WorldRefComponent(world))
+            .addComponent(new DimensionsComponent({
+                width: 60,
+                height: 60
+            }))
 
     }
 
-    export():ExportEntity {
+    export():ExportBuildingEntity {
         const positionComponent = <PositionComponent>this.getComponent('POSITION');
         const buildingStats = <BuildingStatsComponent>this.getComponent('BUILDING-STATS');
+        const dim = <DimensionsComponent>this.getComponent('DIMENSIONS');
 
-        const exportEntity:ExportEntity = {
+        const exportEntity:ExportBuildingEntity = {
             id: this.id,
             name: buildingStats.buildingName,
             type: 'tavern',
             position: [positionComponent.position.x, positionComponent.position.y],
+            dimensions: {
+                width: dim.width,
+                height: dim.height
+            }
         }
 
         return exportEntity;
