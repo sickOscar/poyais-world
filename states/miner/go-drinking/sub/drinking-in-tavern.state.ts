@@ -31,7 +31,7 @@ export class DrinkingInTavernState extends State implements IState {
             movementComponent.arriveOff();
         } else {
             const sm = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
-            sm.getFSM().revert()
+            sm.getFSM().changeState(new GoRest())
         }
 
 
@@ -54,7 +54,7 @@ export class DrinkingInTavernState extends State implements IState {
             stateMachineComponent.getFSM().changeState(new GoDrinkingState());
             stateMachineComponent.getFSM().changeState(new GoWithdraw());
         } else if (humanStats.thirst <= 0) {
-            stateMachineComponent.getFSM().revert()
+            stateMachineComponent.getFSM().changeState(new GoRest());
         }
 
     }

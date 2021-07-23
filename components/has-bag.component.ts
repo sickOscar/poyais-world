@@ -17,7 +17,7 @@ export class HasBagComponent implements Component {
         this.malt = 0;
 
         this.maxWood = 10;
-        this.maxMalt = 10;
+        this.maxMalt = 50;
     }
 
 }

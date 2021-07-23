@@ -13,6 +13,7 @@ import {Vector} from "../../../../abstract/geometry/vector";
 import {Tree} from "../../../../entities/tree";
 import {WalkingToMineState} from "./walking-to-mine.state";
 import {MineLifecycleComponent} from "../../../../components/mine-lifecycle.component";
+import {GoDeposit} from "../../go-deposit/go-deposit.state";
 
 export class MiningState extends State implements IState {
 
@@ -70,10 +71,9 @@ export class MiningState extends State implements IState {
         }
 
 
-
         if (this.timePassedMining >= this.maxTimeMining) {
             const stateMachine = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
-            stateMachine.getFSM().revert();
+            stateMachine.getFSM().changeState(new GoDeposit());
         }
 
     }

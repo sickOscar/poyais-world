@@ -23,8 +23,8 @@ import {FarmerComponent} from "./components/farmer.component";
 import {BuildableComponent} from "./components/buildable.component";
 import {Gender} from "./components/human-stats.component";
 import {OwnershipSystem} from "./systems/ownership.system";
-import {Tree} from "./entities/tree";
-import {TreeLifecycleComponent} from "./components/tree-lifecycle.component";
+import {TerrainType, WorldMap} from "./entities/world-map";
+import {Warehouse} from "./entities/warehouse";
 
 
 export interface ExportEntity {
@@ -76,14 +76,19 @@ export class World {
         deltaTime: 0
     }
 
+    map:WorldMap = new WorldMap(this);
 
     constructor() {
+
+        this.addMap();
 
         this.addMines();
 
         this.addHouseBlocks();
 
         this.addFarmBlocks()
+
+        this.addWarehouse();
 
         this.addTrees();
 
@@ -174,6 +179,11 @@ export class World {
         Bank.addAccount(miner.id, Math.random() * 50);
     }
 
+    addMap() {
+        // const map:WorldMap = new WorldMap(this);
+        this.em.entities.set(this.map.id, this.map);
+    }
+
     addMiners() {
         for (let i = 0; i < 5; i++) {
             this.createRandomMiner()
@@ -240,7 +250,7 @@ export class World {
 
         const f = new Forest(this, {
             distribution: 'ROUND',
-            center: new Vector(700, 100),
+            center: new Vector(700, 150),
             radius: 70,
             trees: 15,
             minRadius: 5,
@@ -258,12 +268,23 @@ export class World {
         });
         this.em.entities.set(f2.id, f2);
 
+        const f3 = new Forest(this, {
+            distribution: 'SQUARE',
+            center: new Vector(750, 300),
+            radius: 70,
+            trees: 20,
+            minRadius: 5,
+            treeRadius: 10
+        });
+        this.em.entities.set(f3.id, f3);
+
+
     }
 
     addFarmBlocks() {
         const farmBlock = new FarmBlock(this, {
-            position: new Vector(700, 400),
-            width: 200,
+            position: new Vector(1400, 400),
+            width: 600,
             height: 400
         })
         this.em.entities.set(farmBlock.id, farmBlock);
@@ -292,6 +313,13 @@ export class World {
         })
         this.em.entities.set(houseBlock3.id, houseBlock3);
 
+    }
+
+    addWarehouse() {
+        const warehouse = new Warehouse(this, {
+            position: new Vector(1100, 100)
+        })
+        this.em.entities.set(warehouse.id, warehouse);
     }
 
     dumpDynamicEntities(): ExportEntity[] {
@@ -327,7 +355,15 @@ export class World {
     }
 
     validatePositionAgainstMap(position: Vector): boolean {
-        return position.x > 0 && position.x < 10000 && position.y > 0 && position.y < 10000;
+        const terrain = this.map.terrainAtCoords(position.x, position.y);
+
+        if (terrain !== TerrainType.WATER) {
+            return true
+        }
+
+        return false;
+
+        //return position.x > 0 && position.x < this.map.width && position.y > 0 && position.y < this.map.height;
     }
 
     locateBuildingAtPosition(position: Vector, type: BuildingTypes): GameEntity | undefined {

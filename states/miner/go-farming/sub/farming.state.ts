@@ -7,6 +7,7 @@ import {StateMachineComponent} from "../../../../components/state-machine.compon
 import {GoDeposit} from "../../go-deposit/go-deposit.state";
 import {WalkToFieldState} from "./walk-to-field.state";
 import {HumanStatsComponent} from "../../../../components/human-stats.component";
+import {BuildingTypes} from "../../../../components/building-stats.component";
 
 export class FarmingState implements IState {
     name = "Farming";
@@ -33,7 +34,7 @@ export class FarmingState implements IState {
 
         if (this.timeSpentFarming > this.maxTimeSpentFarming) {
             if (bag.malt === bag.maxMalt) {
-                sm.getFSM().changeState(new GoDeposit())
+                sm.getFSM().changeState(new GoDeposit(BuildingTypes.WAREHOUSE));
             } else {
                 this.timeSpentFarming = 0;
                 const localFsm = sm.getFSM().currentState.localFsm;

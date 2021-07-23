@@ -25,6 +25,14 @@ export class Vector {
         return new Vector(x, y);
     }
 
+    static randomUnit() {
+        const theta = Math.random() * 2 * Math.PI;
+        return new Vector(
+            Math.cos(theta),
+            Math.sin(theta)
+        )
+    }
+
     static pointToWorldSpace(point: Vector, heading: Vector, position: Vector): Vector {
 
         const angle = Math.atan2(position.y - point.y, position.x - point.x);
@@ -94,6 +102,18 @@ export class Vector {
 
     equals(v:Vector) {
         return this.x === v.x && this.y === v.y;
+    }
+
+    // t between 0 and 1
+    lerp(a:Vector,  t:number):Vector {
+        return new Vector(
+            this.x + (a.x - this.x) * t,
+            this.y + (a.y - this.y) * t,
+        )
+    }
+
+    dot(a:Vector):number {
+        return this.x * a.x + this.y * a .y;
     }
 
 }

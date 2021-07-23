@@ -50,12 +50,12 @@ export class RestingAtHomeState extends State implements IState {
             return;
         }
 
-        if (
-            fsm.previousState
-            && (fsm.previousState.name !== 'RestAtHome' && fsm.previousState.name !== 'EmptyState')
-        ) {
-            fsm.revert();
-        }
+        // if (
+        //     fsm.previousState
+        //     && (fsm.previousState.name !== 'RestAtHome' && fsm.previousState.name !== 'EmptyState')
+        // ) {
+        //     fsm.revert();
+        // }
 
     }
 

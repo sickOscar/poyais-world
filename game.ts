@@ -9,11 +9,11 @@ export class Game {
     }
 
     getInitialState() {
-        return this.world.dumpEntities();
+        return { game: this.world.dumpEntities() };
     }
 
     getState() {
-        return this.world.dumpDynamicEntities()
+        return { game: this.world.dumpDynamicEntities() }
     }
 
 }

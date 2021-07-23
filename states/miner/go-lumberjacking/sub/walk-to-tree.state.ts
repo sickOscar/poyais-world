@@ -8,35 +8,39 @@ import {MovementComponent} from "../../../../components/movement.component";
 import {WalkingTo} from "../../walking/walking-to.state";
 import {BuildingTypes} from "../../../../components/building-stats.component";
 import {LumberjackState} from "./lumberjack.state";
+import {WorldRefComponent} from "../../../../components/world-ref.component";
 
 export class WalkToTreeState extends WalkingTo implements IState {
 
     name = "WalkToTree";
 
+    seekInterval = 2;
+
     enter(entity: Miner) {
-        const tree = entity.locateClosestBuilding(BuildingTypes.TREE);
-        const movementComponent = <MovementComponent>entity.getComponent('MOVEMENT');
-
-        if (!tree) {
-            const smComponent = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
-            smComponent.getFSM().revert();
-            return;
-        }
-
-        movementComponent && movementComponent.arriveOn(tree);
-
+        this.locateTree(entity);
     }
 
     execute(entity: Miner) {
         this.walk(entity);
+
         const positionComponent = <PositionComponent>entity.getComponent('POSITION');
         const movementComponent = <MovementComponent>entity.getComponent('MOVEMENT');
 
-        if (movementComponent.arriveTarget && Vector.distance(positionComponent.position, movementComponent.arriveTarget) < 0.2) {
+        if (movementComponent.arriveTarget && Vector.distance(positionComponent.position, movementComponent.arriveTarget) < 1) {
             const smComponent = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
             const localFsm = smComponent.getFSM().currentState.localFsm;
             localFsm && localFsm.changeState(new LumberjackState());
         }
+
+        const w = <WorldRefComponent>entity.getComponent('WORLD-REF');
+        const delta = w.world.frame.deltaTime
+        this.seekInterval = Math.max(0, this.seekInterval - delta);
+
+        if (this.seekInterval === 0) {
+            this.seekInterval = 2;
+            this.locateTree(entity);
+        }
+
 
     }
 
@@ -47,6 +51,19 @@ export class WalkToTreeState extends WalkingTo implements IState {
 
     onMessage(owner: any, telegram: Telegram): boolean {
         return true;
+    }
+
+    locateTree(entity:Miner) {
+        const tree = entity.locateClosestBuilding(BuildingTypes.TREE);
+        const movementComponent = <MovementComponent>entity.getComponent('MOVEMENT');
+
+        if (!tree) {
+            const smComponent = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
+            smComponent.getFSM().revert();
+            return;
+        }
+
+        movementComponent && movementComponent.arriveOn(tree);
     }
 
 }

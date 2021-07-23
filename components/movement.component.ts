@@ -3,6 +3,7 @@ import {Vector} from "../abstract/geometry/vector";
 import {World} from "../world";
 import {GameEntity} from "../abstract/ecs/game-entity";
 import {MassComponent} from "./mass.component";
+import {TerrainType} from "../entities/world-map";
 
 export class MovementComponent implements Component {
 
@@ -71,9 +72,12 @@ export class MovementComponent implements Component {
             // .truncate(this.maxForce)
             .multiply(delta)
 
+        const friction = this.worldRef.map.getFrictionAt(currentPosition.x, currentPosition.y)
+
         this.velocity = this.velocity
             .add(this.acceleration)
             .truncate(this.maxSpeed)
+            .multiply(friction)
 
         if (this.velocity.magnitude() > 0.01) {
             this.heading = this.velocity.normalize();
@@ -88,8 +92,8 @@ export class MovementComponent implements Component {
 
         if (!this.worldRef.validatePositionAgainstMap(newPos)) {
             this.velocity = new Vector(0, 0);
-            this.heading = this.heading.inverse();
-            this.sideVector = this.heading.perp();
+            // this.heading = this.heading.inverse();
+            // this.sideVector = this.heading.perp();
             return currentPosition
         }
 
@@ -177,25 +181,41 @@ export class MovementComponent implements Component {
 
     private arrive(currentPosition:Vector): Vector {
 
-        const deceleration = 3;
+        const deceleration = 1;
 
         if (!this.arriveTarget) {
             return new Vector(0, 0)
         }
 
-        const toTarget = this.arriveTarget.subtract(currentPosition);
-        const dist = toTarget.length();
+        let desiredVelocity = this.arriveTarget.subtract(currentPosition);
+        const dist = desiredVelocity.length();
+
         if (dist > 0) {
 
             let speed = dist / deceleration;
             speed = Math.min(speed, this.maxSpeed);
 
-            const desiredVel:Vector = toTarget.multiply(speed).divide(dist)
+            const desiredVel:Vector = desiredVelocity
+                .multiply(speed)
+                .divide(dist)
 
             return desiredVel.subtract(this.velocity);
         }
-
         return new Vector(0, 0);
+
+
+        // const slowingRadius = 80;
+        // if (dist < slowingRadius) {
+        //     desiredVelocity = desiredVelocity.normalize()
+        //         .multiply(this.maxSpeed)
+        //         .multiply(dist / slowingRadius)
+        // } else {
+        //     desiredVelocity = desiredVelocity.normalize().multiply(this.maxSpeed)
+        // }
+        //
+        // return  desiredVelocity.subtract(this.velocity)
+
+
     }
 
 
