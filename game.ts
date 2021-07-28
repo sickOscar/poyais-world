@@ -16,4 +16,8 @@ export class Game {
         return { game: this.world.dumpDynamicEntities() }
     }
 
+    addMiner(x:number, y:number) {
+        this.world.createRandomMiner(x, y);
+    }
+
 }

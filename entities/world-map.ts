@@ -2,6 +2,17 @@ import {GameEntity} from "../abstract/ecs/game-entity";
 import {ExportEntity, World} from "../world";
 import {noise} from "../abstract/geometry/perlin";
 import * as fs from 'fs';
+import {Vector} from "../abstract/geometry/vector";
+
+export class Wall {
+    begin:Vector;
+    end:Vector;
+    // normal:Vector
+    constructor(begin:Vector, end:Vector) {
+        this.begin = begin;
+        this.end = end;
+    }
+}
 
 export enum TerrainType {
     WATER = 0,
@@ -32,6 +43,8 @@ export class WorldMap extends GameEntity {
 
     grid:TerrainType[][];
 
+    walls:Wall[] = [];
+
 
     constructor(world:World) {
         super();
@@ -46,6 +59,9 @@ export class WorldMap extends GameEntity {
             const row = <TerrainType[]>rowString.split(',').map(parseFloat)
             this.grid.push(row);
         })
+
+        this.walls = this.findWalls();
+        this.optimizeWalls();
     }
 
     terrainAtCoords(x:number, y:number):TerrainType {
@@ -74,6 +90,107 @@ export class WorldMap extends GameEntity {
             height: this.height
         }
     }
+
+    findWalls() {
+
+        const walls = [];
+
+        for (let i = 0; i < this.grid.length; i++) {
+            for (let j = 0; j < this.grid[i].length; j++) {
+
+                if (this.grid[i][j] === 1) continue
+
+                const x0 = Math.max(0, j - 1);
+                const x1 = Math.min(this.grid[i].length - 1, j + 1)
+
+                const y0 = Math.max(0, i - 1);
+                const y1 = Math.min(this.grid.length - 1, i + 1);
+
+                for (let x = x0; x <= x1; x++) {
+                    for (let y = y0; y <= y1; y++) {
+
+                        if (x === j && y === i) continue; // center
+                        if (x !== j && y !== i) continue; // angles
+                        if (this.grid[y][x] === 0) continue;
+
+                        let begin = new Vector(0, 0);
+                        let end = new Vector(0, 0);
+
+                        // terrain on the left
+                        if (x < j) {
+                            begin = new Vector(this.tileSize * j, this.tileSize * i);
+                            end = new Vector(this.tileSize * j, this.tileSize * (i+1))
+                            walls.push(new Wall(begin, end));
+                        }
+
+                        // terrain on the right
+                        if (x > j) {
+                            end = new Vector(this.tileSize * x, this.tileSize * y)
+                            begin = new Vector(this.tileSize * x, this.tileSize * (y+1))
+                            walls.push(new Wall(begin, end));
+
+                        }
+
+                        // terrain on the top
+                        if (y < i) {
+                            end = new Vector(this.tileSize * x, this.tileSize * i)
+                            begin = new Vector(this.tileSize * (x+1), this.tileSize * i)
+                            walls.push(new Wall(begin, end));
+
+                        }
+
+                        // terrain on the bottom
+                        if (y > i) {
+                            begin = new Vector(this.tileSize * x, this.tileSize * y)
+                            end = new Vector(this.tileSize * (x + 1), this.tileSize * y)
+                            walls.push(new Wall(begin, end));
+                        }
+                    }
+                }
+
+            }
+        }
+
+        return walls;
+
+    }
+
+    optimizeWalls() {
+
+        for (let i = this.walls.length - 1; i >= 0 ; i--) {
+
+            // find next starting on this end
+            let j = this.walls.length - 1;
+            let nextWall;
+            for (j; j >= 0; j--) {
+                if (j !== i && this.walls[i].end.equals(this.walls[j].begin)) {
+                    nextWall = this.walls[j];
+                    break;
+                }
+            }
+
+            if (!nextWall) continue
+
+            const heading = this.walls[i].begin.subtract(this.walls[i].end).normalize().heading();
+            const nextWallheading = nextWall.begin.clone().subtract(nextWall.end).normalize().heading();
+
+            if(heading === nextWallheading) {
+                const newWall = new Wall(
+                    this.walls[i].begin.clone(),
+                    this.walls[j].end.clone()
+                );
+                if (i > j) {
+                    this.walls[j] = newWall;
+                    this.walls.splice(i, 1);
+                }
+                if (i < j) {
+                    this.walls[i] = newWall;
+                    this.walls.splice(j, 1)
+                }
+            }
+        }
+    }
+
 
 
 }

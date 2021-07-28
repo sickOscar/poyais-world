@@ -116,4 +116,8 @@ export class Vector {
         return this.x * a.x + this.y * a .y;
     }
 
+    heading():number {
+        return Math.atan2(this.y, this.x);
+    }
+
 }

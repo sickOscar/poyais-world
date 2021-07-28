@@ -2,6 +2,7 @@
         integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh"
         crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/p5@1.3.1/lib/p5.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
 <style>*, html, body {
     margin: 0;
     padding: 0
@@ -275,6 +276,8 @@
         const houseWidth = 20;
         const houseHeight = 20;
 
+        let found = false;
+
         // checkCollisions
         for (let i = 0; i < initialState.concat(currentState).length; i++) {
             const entity = initialState[i];
@@ -292,6 +295,7 @@
                             entity.position[1]) < (diameter / 2)
                     ) {
                         watching = entity.id
+                        found = true;
                     }
                     break;
                 case "house":
@@ -311,6 +315,7 @@
                             entity.position[0], entity.position[1]
                         ) < entity.dimensions.radius) {
                         watching = entity.id;
+                        found = true;
                     }
                     break;
                 case "mine":
@@ -320,6 +325,7 @@
                             entity.position[0], entity.position[1]
                         ) < entity.dimensions.radius) {
                         watching = entity.id;
+                        found = true;
                     }
                     break;
                 default:
@@ -327,7 +333,9 @@
             }
         }
 
-
+        if (!found) {
+            axios.post('http://localhost:3000/miner', {x: mouseX + offsetX, y: mouseY + offsetY})
+        }
     }
 
     function handleMousePos() {

@@ -1,11 +1,16 @@
 import {Game} from "./game";
 import {Socket} from "socket.io";
 import {Request, Response} from "express";
+import cors from 'cors';
+import bodyParser from 'body-parser';
 
 const game = new Game();
 
 const express = require('express');
 const app = express();
+app.use(cors())
+// parse application/json
+app.use(bodyParser.json())
 const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io")
@@ -19,6 +24,13 @@ const io = new Server(server, {
 app.get('/', (req:Request, res:Response) => {
     res.send('<h1>Hello Poyais!</h1>');
 });
+
+app.post('/miner', (req:Request, res:Response) => {
+    const {x, y} = req.body;
+    console.log(`x, y`, x, y)
+    game.addMiner(x, y);
+    res.json({});
+})
 
 io.on('connection', (socket:Socket) => {
     console.log('a user connected');

@@ -141,12 +141,7 @@ function optimizeWalls() {
                 walls[i] = newWall;
                 walls.splice(j, 1)
             }
-
-
         }
-
-
-
     }
 
     console.log('walls', walls)
