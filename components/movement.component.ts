@@ -25,12 +25,12 @@ export class MovementComponent implements Component {
     // pursuitOn:boolean = false;
     wandering:boolean = false;
 
-
     wanderRadius:number = 100;
     wanderDistance:number = 50;
     wanderJitter:number = 20;
     wanderTarget:Vector;
 
+    feelers:Vector[] = [];
 
     worldRef:World;
 
@@ -114,10 +114,66 @@ export class MovementComponent implements Component {
             steeringForce = steeringForce.add(wanderForce);
         }
 
+        steeringForce = steeringForce.add(this.avoidWalls(position))
+
         return steeringForce;
 
     }
 
+    avoidWalls(position:Vector):Vector {
+        const walls = this.worldRef.map.walls;
+
+        this.updateFeelers()
+
+        let wallIndex = -1;
+        let steering = new Vector(0, 0)
+
+        for (let i = 0; i < this.feelers.length; i++) {
+
+            for (let w = 0; w < walls.length; w++) {
+
+                const intersection = Vector.linesIntersect(
+                    position.x,
+                    position.y,
+                    position.x + this.feelers[i].x,
+                    position.y + this.feelers[i].y,
+                    walls[w].begin.x,
+                    walls[w].begin.y,
+                    walls[w].end.x,
+                    walls[w].end.y
+                )
+
+                if (intersection) {
+                    wallIndex = w;
+                }
+
+            }
+
+            if (wallIndex >= 0) {
+                const nearest = Vector.findNearestPointToLine(position, walls[wallIndex].begin, walls[wallIndex].end)
+                const overShoot = new Vector(position.x + this.feelers[i].x, position.y + this.feelers[i].y).subtract(nearest)
+
+
+                const wallVec  = walls[wallIndex].end.subtract(walls[wallIndex].begin);
+                const wallNormal = new Vector(-wallVec.y, wallVec.x);
+
+                steering = wallNormal.multiply(overShoot.length())
+                return steering
+            }
+
+
+        }
+
+        return steering
+
+    }
+
+    updateFeelers() {
+        const heading = this.velocity.heading()
+        this.feelers = [
+            new Vector(Math.cos(heading), Math.sin(heading)).multiply(50)
+        ]
+    }
 
     seekOn(targetPosition:Vector) {
         this.seekTarget = targetPosition.clone();

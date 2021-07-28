@@ -1,4 +1,3 @@
-
 export class Vector {
 
     x: number;
@@ -88,36 +87,58 @@ export class Vector {
         return new Vector(this.x, this.y);
     }
 
-    inverse():Vector {
+    inverse(): Vector {
         return new Vector(-this.x, -this.y);
     }
 
-    length():number {
+    length(): number {
         return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2))
     }
 
-    opposite():Vector {
+    opposite(): Vector {
         return this.inverse();
     }
 
-    equals(v:Vector) {
+    equals(v: Vector) {
         return this.x === v.x && this.y === v.y;
     }
 
     // t between 0 and 1
-    lerp(a:Vector,  t:number):Vector {
+    lerp(a: Vector, t: number): Vector {
         return new Vector(
             this.x + (a.x - this.x) * t,
             this.y + (a.y - this.y) * t,
         )
     }
 
-    dot(a:Vector):number {
-        return this.x * a.x + this.y * a .y;
+    dot(a: Vector): number {
+        return this.x * a.x + this.y * a.y;
     }
 
-    heading():number {
+    heading(): number {
         return Math.atan2(this.y, this.x);
+    }
+
+    static findNearestPointToLine(point: Vector, lineStart: Vector, lineEnd:Vector) {
+        var atob = {x: lineEnd.x - lineStart.x, y: lineEnd.y - lineStart.y};
+        var atop = {x: point.x - lineStart.x, y: point.y - lineStart.y};
+        var len = atob.x * atob.x + atob.y * atob.y;
+        var dot = atop.x * atob.x + atop.y * atob.y;
+        var t = Math.min(1, Math.max(0, dot / len));
+        dot = (lineEnd.x - lineStart.x) * (point.y - lineStart.y) - (lineEnd.y - lineStart.y) * (point.x - lineStart.x);
+        return new Vector(lineStart.x + atob.x * t, lineStart.y + atob.y * t);
+    }
+
+    static linesIntersect(a: number, b: number, c: number, d: number, p: number, q: number, r: number, s: number) {
+        var det, gamma, lambda;
+        det = (c - a) * (s - q) - (r - p) * (d - b);
+        if (det === 0) {
+            return false;
+        } else {
+            lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
+            gamma = ((b - d) * (r - a) + (c - a) * (s - b)) / det;
+            return (0 < lambda && lambda < 1) && (0 < gamma && gamma < 1);
+        }
     }
 
 }

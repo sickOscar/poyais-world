@@ -33,6 +33,7 @@ export type ExportMapEntity = ExportEntity & {
     width:number,
     height: number;
     tileSize: number;
+    walls?: Wall[]
 }
 
 export class WorldMap extends GameEntity {
@@ -87,7 +88,8 @@ export class WorldMap extends GameEntity {
             grid: this.grid,
             tileSize: this.tileSize,
             width: this.width,
-            height: this.height
+            height: this.height,
+            walls: this.walls
         }
     }
 
@@ -98,7 +100,7 @@ export class WorldMap extends GameEntity {
         for (let i = 0; i < this.grid.length; i++) {
             for (let j = 0; j < this.grid[i].length; j++) {
 
-                if (this.grid[i][j] === 1) continue
+                if (this.grid[i][j] !== TerrainType.WATER) continue
 
                 const x0 = Math.max(0, j - 1);
                 const x1 = Math.min(this.grid[i].length - 1, j + 1)
@@ -111,7 +113,8 @@ export class WorldMap extends GameEntity {
 
                         if (x === j && y === i) continue; // center
                         if (x !== j && y !== i) continue; // angles
-                        if (this.grid[y][x] === 0) continue;
+                        if (this.grid[y][x] === TerrainType.WATER) continue;
+
 
                         let begin = new Vector(0, 0);
                         let end = new Vector(0, 0);

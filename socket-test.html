@@ -15,6 +15,7 @@
 
     socket.on('initial-state', (data) => {
         initialState = JSON.parse(data).game;
+        console.log(initialState.filter(el => el.type === "map")[0].walls.length)
     });
 
     socket.on('state', (data) => {
@@ -87,6 +88,13 @@
 
                         }
                     }
+
+                    for (let i = 0; i < building.walls.length; i++) {
+                        stroke("red")
+                        const wall = building.walls[i];
+                        line(offX(wall.begin.x), offY(wall.begin.y), offX(wall.end.x), offY(wall.end.y));
+                    }
+
                     return;
                 }
 
