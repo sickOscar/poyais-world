@@ -2,7 +2,7 @@ import {GameEntity} from "../abstract/ecs/game-entity";
 import {StateMachineComponent} from "../components/state-machine.component";
 import {StateMachine} from "../abstract/fsm/state-machine";
 import {HumanStatsComponent} from "../components/human-stats.component";
-import {PositionComponent} from "../components/position.component";
+import {PositionComponent, PositionComponentName} from "../components/position.component";
 import {LivingState} from "../states/miner/living.state";
 import {MovementComponent} from "../components/movement.component";
 import {WorldRefComponent} from "../components/world-ref.component";
@@ -32,10 +32,10 @@ import {EmptyState} from "../states/empty-state";
 import {round} from "../abstract/geometry/numbers";
 import {HasOwnerComponent} from "../components/has-owner.component";
 import {Farm} from "./farm";
+import {HasEmployeesComponent} from "../components/has-employees.component";
+import {Game} from "../game";
+import {JobComponent, Jobs} from "../components/job.component";
 
-export enum Jobs {
-    'FARMER' = 0
-}
 
 export interface ClosestBuildingOptions {
     considerCutting: boolean | true
@@ -76,12 +76,40 @@ export class Miner extends GameEntity {
 
         if (options.job === Jobs.FARMER) {
             this.addComponent(new FarmerComponent())
+        } else {
+            this.findAJob()
         }
 
         const stateMachine = new StateMachine(this);
         fsmComponent.setFSM(stateMachine);
         stateMachine.changeState(new GoRest());
         stateMachine.changeGlobalState(new LivingState());
+
+    }
+
+    findAJob() {
+        const worldRef = <WorldRefComponent>this.getComponent('WORLD-REF');
+
+        const placesWithJobsAvailable = (<[string, GameEntity][]>Array.from(worldRef.world.em.entities))
+            .filter(([id, entity]:[string, GameEntity]) => {
+                const hasEmployees = <HasEmployeesComponent>entity.getComponent('HAS-EMPLOYEES');
+                return hasEmployees && hasEmployees.employees.length < hasEmployees.maxEmployees;
+            })
+
+
+        if (placesWithJobsAvailable.length === 0) {
+            return
+        }
+
+        const workplace:GameEntity = placesWithJobsAvailable[Math.floor(Math.random()*placesWithJobsAvailable.length)][1];
+        // console.log('GOT PLACE', workplace)
+
+        const hasEmployees = <HasEmployeesComponent>workplace.getComponent('HAS-EMPLOYEES');
+        if (hasEmployees) {
+            hasEmployees.employees.push(this);
+            this.addComponent(new JobComponent(hasEmployees.jobType, workplace))
+        }
+
 
     }
 
@@ -138,13 +166,13 @@ export class Miner extends GameEntity {
             })
 
 
-        const minerPosition = <PositionComponent>this.getComponent('POSITION');
+        const minerPosition = <PositionComponent>this.getComponent(PositionComponentName);
 
         let closestDistance = Infinity;
         let closestBuilding = null;
         for (let i = 0; i < buildingsOfType.length; i++) {
             const building = buildingsOfType[i][1];
-            const positionComponent = <PositionComponent>building.getComponent('POSITION')
+            const positionComponent = <PositionComponent>building.getComponent(PositionComponentName)
             const dist = Vector.distance(positionComponent.position, minerPosition.position);
             if (dist < closestDistance) {
 
@@ -173,7 +201,7 @@ export class Miner extends GameEntity {
         }
 
         if (closestBuilding) {
-            return (<PositionComponent>closestBuilding.getComponent('POSITION')).position.clone();
+            return (<PositionComponent>closestBuilding.getComponent(PositionComponentName)).position.clone();
         } else {
             return null;
         }
@@ -260,6 +288,13 @@ export class Miner extends GameEntity {
             this.removeComponent('HAS-HOUSE');
         }
 
+        const job = <JobComponent>this.getComponent('JOB');
+        if (job) {
+            const hasEmployees = <HasEmployeesComponent>job.workplace.getComponent('HAS-EMPLOYEES');
+            hasEmployees.employees = hasEmployees.employees.filter(e => e.id !== this.id);
+            this.removeComponent('JOB');
+        }
+
         sm.getFSM().changeState(new EmptyState());
         sm.getFSM().changeGlobalState(new EmptyState());
 
@@ -284,7 +319,7 @@ export class Miner extends GameEntity {
 
     export(): ExportHumanEntity {
         const humanStatsComponent = <HumanStatsComponent>this.getComponent('HUMAN-STATS');
-        const positionComponent = <PositionComponent>this.getComponent('POSITION');
+        const positionComponent = <PositionComponent>this.getComponent(PositionComponentName);
         const movementComponent = <MovementComponent>this.getComponent('MOVEMENT');
         const smComponent = <StateMachineComponent>this.getComponent('STATE-MACHINE');
         const mass = <MassComponent>this.getComponent('MASS');
@@ -328,6 +363,11 @@ export class Miner extends GameEntity {
             malt: round(bag.malt)
         }
 
+        const job = <JobComponent>this.getComponent('JOB');
+        if (job) {
+            humanEntity.job = job.job;
+        }
+
         return Object.assign({}, exportEntity, humanEntity) as ExportHumanEntity;
 
     }
@@ -344,7 +384,7 @@ export class Miner extends GameEntity {
         }
 
 
-        const positionComponent = <PositionComponent>this.getComponent('POSITION');
+        const positionComponent = <PositionComponent>this.getComponent(PositionComponentName);
         const humanStatsComponent = <HumanStatsComponent>this.getComponent('HUMAN-STATS');
         const hasMoneyComponent = <HasMoneyToSpendComponent>this.getComponent('MONEY-TO-SPEND');
         const hasBagComponent = <HasBagComponent>this.getComponent('HAS-BAG');

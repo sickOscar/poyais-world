@@ -2,9 +2,11 @@ import {Component} from "../abstract/ecs/component";
 import {World} from "../world";
 import {GameEntity} from "../abstract/ecs/game-entity";
 
+export const WorldRefComponentName = 'WORLD-REF';
+
 export class WorldRefComponent implements Component {
 
-    name = "WORLD-REF";
+    name = WorldRefComponentName;
 
     world:World;
 

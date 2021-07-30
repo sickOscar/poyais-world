@@ -3,7 +3,7 @@ import {World} from "../world";
 import {GameEntity} from "../abstract/ecs/game-entity";
 import {StateMachineComponent} from "../components/state-machine.component";
 import {MovementComponent} from "../components/movement.component";
-import {PositionComponent} from "../components/position.component";
+import {PositionComponent, PositionComponentName} from "../components/position.component";
 
 export class MovementSystem implements System {
 
@@ -21,7 +21,7 @@ export class MovementSystem implements System {
 
                 if (movementComponent.isMoving()) {
 
-                    const positionComponent:PositionComponent = <PositionComponent>entity.getComponent('POSITION');
+                    const positionComponent:PositionComponent = <PositionComponent>entity.getComponent(PositionComponentName);
 
                     if (positionComponent) {
                         positionComponent.position = movementComponent.updatePosition(positionComponent.position, delta);

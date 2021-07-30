@@ -1,7 +1,7 @@
 import {IState} from "../../../abstract/fsm/state";
 import {Miner} from "../../../entities/miner";
 import {Telegram} from "../../../abstract/messaging/telegram";
-import {PositionComponent} from "../../../components/position.component";
+import {PositionComponent, PositionComponentName} from "../../../components/position.component";
 import {MovementComponent} from "../../../components/movement.component";
 import {Vector} from "../../../abstract/geometry/vector";
 import {BuildingTypes} from "../../../components/building-stats.component";
@@ -10,18 +10,17 @@ import {StateMachineComponent} from "../../../components/state-machine.component
 import {Bank} from "../../../entities/bank";
 import {DiedState} from "../died.state";
 import {HasBagComponent} from "../../../components/has-bag.component";
-import {GoMiningState} from "../go-mining/go-mining.state";
 import {IsInBuildingComponent} from "../../../components/is-in-building.component";
-import {WorldRefComponent} from "../../../components/world-ref.component";
-import {GoLumberjackingState} from "../go-lumberjacking/go-lumberjacking.state";
-import {FarmerComponent} from "../../../components/farmer.component";
-import {GoFarmingState} from "../go-farming/go-farming.state";
+import {WorldRefComponent, WorldRefComponentName} from "../../../components/world-ref.component";
 import {GoDrinkingState} from "../go-drinking/go-drinking.state";
+import {GameEntity} from "../../../abstract/ecs/game-entity";
+import {Depositables, DepositComponent, DepositComponentName} from "../../../components/has-deposit.component";
 
 export class GoDeposit extends WalkingTo implements IState {
 
     name = "GoDeposit";
 
+    target: GameEntity | null = null;
     targetType: BuildingTypes = BuildingTypes.BANK;
 
     constructor(type?: BuildingTypes) {
@@ -30,10 +29,13 @@ export class GoDeposit extends WalkingTo implements IState {
     }
 
     enter(entity: Miner) {
-        const bank = entity.locateClosestBuilding(this.targetType);
+        const target = entity.locateClosestBuilding(this.targetType);
         const movement = <MovementComponent>entity.getComponent("MOVEMENT")
-        if (bank && movement) {
-            movement.arriveOn(bank)
+        const worldRef = <WorldRefComponent>entity.getComponent(WorldRefComponentName)
+
+        if (target && movement) {
+            this.target = worldRef.world.locateBuildingAtPosition(target, this.targetType) || null;
+            movement.arriveOn(target)
         }
     }
 
@@ -41,7 +43,7 @@ export class GoDeposit extends WalkingTo implements IState {
         this.walk(entity);
 
         // is it close to tavern? go drinking
-        const positionComponent = <PositionComponent>entity.getComponent('POSITION');
+        const positionComponent = <PositionComponent>entity.getComponent(PositionComponentName);
         const movementComponent = <MovementComponent>entity.getComponent('MOVEMENT');
         const stateMachineComponent = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
 
@@ -55,24 +57,31 @@ export class GoDeposit extends WalkingTo implements IState {
                 entity.addComponent(new IsInBuildingComponent(building))
             }
 
+            movementComponent.arriveOff();
+
             const hasBagComponent = <HasBagComponent>entity.getComponent('HAS-BAG');
+            const deposit = this.target && <DepositComponent>this.target.getComponent(DepositComponentName);
 
-            if (
-                hasBagComponent.gold > 0
-                || hasBagComponent.wood > 0
-                || hasBagComponent.malt > 0
-            ) {
+            if (hasBagComponent && deposit) {
+                let changedMoney = 0;
 
-                // TODO: conversion gold??
-                let changedMoney = hasBagComponent.gold * 2;
-                hasBagComponent.gold = 0;
+                if (deposit && deposit.doAccept(Depositables.GOLD)) {
+                    changedMoney += hasBagComponent.gold * 2;
+                    deposit.storage[Depositables.GOLD] += hasBagComponent.gold;
+                    hasBagComponent.gold = 0;
+                }
 
-                // TODO conversion wood
-                changedMoney += hasBagComponent.wood * 1;
-                hasBagComponent.wood = 0;
+                if (deposit && deposit.doAccept(Depositables.WOOD)) {
+                    changedMoney += hasBagComponent.wood * 1;
+                    deposit.storage[Depositables.WOOD] += hasBagComponent.wood;
+                    hasBagComponent.wood = 0;
+                }
 
-                changedMoney += hasBagComponent.malt * 0.5;
-                hasBagComponent.malt = 0;
+                if (deposit && deposit.doAccept(Depositables.MALT)) {
+                    changedMoney += hasBagComponent.malt * 0.5;
+                    deposit.storage[Depositables.MALT] += hasBagComponent.malt;
+                    hasBagComponent.malt = 0;
+                }
 
                 const depositRest = Bank.depositToAccount(entity.id, changedMoney);
 
@@ -85,7 +94,6 @@ export class GoDeposit extends WalkingTo implements IState {
 
             }
 
-            movementComponent.arriveOff();
 
             const chance = Math.random();
             if (chance > 0.5) {

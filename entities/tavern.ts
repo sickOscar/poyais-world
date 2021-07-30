@@ -1,10 +1,12 @@
 import {GameEntity} from "../abstract/ecs/game-entity";
-import {PositionComponent} from "../components/position.component";
+import {PositionComponent, PositionComponentName} from "../components/position.component";
 import {Vector} from "../abstract/geometry/vector";
 import {BuildingStatsComponent, BuildingTypes} from "../components/building-stats.component";
 import {ExportBuildingEntity, ExportEntity, World} from "../world";
 import {WorldRefComponent} from "../components/world-ref.component";
 import {DimensionsComponent} from "../components/dimensions.component";
+import {HasEmployeesComponent} from "../components/has-employees.component";
+import {Jobs} from "../components/job.component";
 
 export interface TavernOptions {
     position: Vector,
@@ -25,11 +27,12 @@ export class Tavern extends GameEntity {
                 width: 60,
                 height: 60
             }))
+            .addComponent(new HasEmployeesComponent(4, Jobs.BARTENDER))
 
     }
 
     export():ExportBuildingEntity {
-        const positionComponent = <PositionComponent>this.getComponent('POSITION');
+        const positionComponent = <PositionComponent>this.getComponent(PositionComponentName);
         const buildingStats = <BuildingStatsComponent>this.getComponent('BUILDING-STATS');
         const dim = <DimensionsComponent>this.getComponent('DIMENSIONS');
 

@@ -1,5 +1,5 @@
 import {GameEntity} from "../abstract/ecs/game-entity";
-import {PositionComponent} from "../components/position.component";
+import {PositionComponent, PositionComponentName} from "../components/position.component";
 import {Vector} from "../abstract/geometry/vector";
 import {BuildingStatsComponent, BuildingTypes} from "../components/building-stats.component";
 import {ExportBuildingEntity, ExportEntity, World} from "../world";
@@ -30,7 +30,7 @@ export class Mine extends GameEntity {
     }
 
     export(): ExportBuildingEntity {
-        const positionComponent = <PositionComponent>this.getComponent('POSITION');
+        const positionComponent = <PositionComponent>this.getComponent(PositionComponentName);
         const dimensionsComponent = <DimensionsComponent>this.getComponent('DIMENSIONS');
         const mine = <MineLifecycleComponent>this.getComponent('MINE-LIFECYCLE');
 

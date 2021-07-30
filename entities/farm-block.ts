@@ -1,5 +1,5 @@
 import {GameEntity} from "../abstract/ecs/game-entity";
-import {PositionComponent} from "../components/position.component";
+import {PositionComponent, PositionComponentName} from "../components/position.component";
 import {DimensionsComponent} from "../components/dimensions.component";
 import {Vector} from "../abstract/geometry/vector";
 import {ExportEntity, World} from "../world";
@@ -95,7 +95,7 @@ export class FarmBlock extends GameEntity {
 
                 for (let w = 0; w < this.farms.length; w++) {
                     const farm = this.farms[w];
-                    const farmPos = <PositionComponent>farm.getComponent('POSITION');
+                    const farmPos = <PositionComponent>farm.getComponent(PositionComponentName);
                     const farmDim = <DimensionsComponent>farm.getComponent('DIMENSIONS');
 
                     if (farmDim && farmPos && farmDim.width && farmDim.height) {
@@ -129,7 +129,7 @@ export class FarmBlock extends GameEntity {
 
     export():ExportEntity {
 
-        const positionComponent = <PositionComponent>this.getComponent('POSITION');
+        const positionComponent = <PositionComponent>this.getComponent(PositionComponentName);
 
         return {
             id: this.id,

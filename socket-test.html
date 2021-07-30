@@ -26,12 +26,12 @@
 
     let statusbarHeight = 100;
 
-    const mapWidth = 3000;
-    const mapHeight = 3000;
+    const mapWidth = 10000;
+    const mapHeight = 10000;
 
     let offsetX = 0;
     let offsetY = 0;
-    let scrollPace = 5;
+    let scrollPace = 20;
 
     let W;
     let H;
@@ -69,16 +69,28 @@
                         for (let j = 0; j < building.grid[i].length; j++) {
                             switch (building.grid[i][j]) {
                                 case 0:
-                                    fill("#009AD5")
+                                    fill("blue")
                                     break;
                                 case 1:
-                                    fill('#006D00')
+                                    fill('#6495ed')
                                     break;
                                 case 2:
-                                    fill('#492200')
+                                    fill('#f4a460')
                                     break;
                                 case 3:
-                                    fill('#335733')
+                                    fill('green')
+                                    break;
+                                case 4:
+                                    fill('brown')
+                                    break;
+                                case 5:
+                                    fill('#006400')
+                                    break;
+                                case 6:
+                                    fill('grey')
+                                    break;
+                                case 7:
+                                    fill('red')
                                     break;
                                 default:
                                     fill("white")
@@ -184,6 +196,7 @@
                 }
 
                 if (building.type === "mine") {
+                    stroke('black')
                     fill("gray");
                     circle(
                         offX(building.position[0] - 10),
@@ -266,7 +279,13 @@
     }
 
     function drawTopBar() {
+        noStroke();
+        fill("black");
+        rect(W - 200, 0, 200, 50)
 
+        textSize(20);
+        fill(255)
+        text(`${offsetX + mouseX}.${offsetY + mouseY}`, W - 180, 30)
     }
 
     function drawEntityHighlight() {

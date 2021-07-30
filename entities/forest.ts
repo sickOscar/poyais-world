@@ -1,7 +1,7 @@
 import {Tree} from "./tree";
 import {Vector} from "../abstract/geometry/vector";
 import {World} from "../world";
-import {PositionComponent} from "../components/position.component";
+import {PositionComponent, PositionComponentName} from "../components/position.component";
 import {DimensionsComponent} from "../components/dimensions.component";
 import {GameEntity} from "../abstract/ecs/game-entity";
 import {WorldRefComponent} from "../components/world-ref.component";
@@ -68,7 +68,7 @@ export class Forest extends GameEntity {
 
     round() {
 
-        const center = <Vector>(<PositionComponent>this.getComponent('POSITION')).position;
+        const center = <Vector>(<PositionComponent>this.getComponent(PositionComponentName)).position;
         const radius = <number>(<DimensionsComponent>this.getComponent('DIMENSIONS')).radius
 
         for (let i = 0; i < this.trees; i++) {
@@ -86,7 +86,7 @@ export class Forest extends GameEntity {
 
     square() {
 
-        const center = <Vector>(<PositionComponent>this.getComponent('POSITION')).position;
+        const center = <Vector>(<PositionComponent>this.getComponent(PositionComponentName)).position;
         const radius = <number>(<DimensionsComponent>this.getComponent('DIMENSIONS')).radius
 
         for (let i = 0; i < this.trees; i++) {
@@ -104,7 +104,7 @@ export class Forest extends GameEntity {
     }
 
     plantTree() {
-        const center = <Vector>(<PositionComponent>this.getComponent('POSITION')).position;
+        const center = <Vector>(<PositionComponent>this.getComponent(PositionComponentName)).position;
         const radius = <number>(<DimensionsComponent>this.getComponent('DIMENSIONS')).radius
         const x = Math.round(center.x - radius / 2 + Math.random() * radius);
         const y = Math.round(center.y - radius / 2 + Math.random() * radius);
@@ -138,9 +138,9 @@ export class Forest extends GameEntity {
                     return;
                 }
 
-                const positionI = (<PositionComponent>this.forest[i].getComponent('POSITION')).position;
+                const positionI = (<PositionComponent>this.forest[i].getComponent(PositionComponentName)).position;
                 const dimensionsI = <DimensionsComponent>this.forest[i].getComponent('DIMENSIONS');
-                const positionJ = (<PositionComponent>this.forest[j].getComponent('POSITION')).position;
+                const positionJ = (<PositionComponent>this.forest[j].getComponent(PositionComponentName)).position;
                 const dimensionsJ = <DimensionsComponent>this.forest[j].getComponent('DIMENSIONS');
 
                 if (!positionJ || !positionI || !dimensionsI || !dimensionsJ) {

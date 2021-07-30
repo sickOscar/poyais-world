@@ -171,7 +171,7 @@ export class MovementComponent implements Component {
     updateFeelers() {
         const heading = this.velocity.heading()
         this.feelers = [
-            new Vector(Math.cos(heading), Math.sin(heading)).multiply(50)
+            new Vector(Math.cos(heading), Math.sin(heading)).multiply(20)
         ]
     }
 

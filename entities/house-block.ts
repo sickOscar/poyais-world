@@ -1,5 +1,5 @@
 import {GameEntity} from "../abstract/ecs/game-entity";
-import {PositionComponent} from "../components/position.component";
+import {PositionComponent, PositionComponentName} from "../components/position.component";
 import {DimensionsComponent} from "../components/dimensions.component";
 import {Vector} from "../abstract/geometry/vector";
 import {ExportEntity, World} from "../world";
@@ -75,7 +75,7 @@ export class HouseBlock extends GameEntity {
 
                 for (let w = 0; w < this.houses.length; w++) {
                     const house = this.houses[w];
-                    const housePos = <PositionComponent>house.getComponent('POSITION');
+                    const housePos = <PositionComponent>house.getComponent(PositionComponentName);
                     const houseDim = <DimensionsComponent>house.getComponent('DIMENSIONS');
 
                     if (houseDim && housePos && houseDim.width && houseDim.height) {
@@ -109,7 +109,7 @@ export class HouseBlock extends GameEntity {
 
     export():ExportEntity {
 
-        const positionComponent = <PositionComponent>this.getComponent('POSITION');
+        const positionComponent = <PositionComponent>this.getComponent(PositionComponentName);
 
         return {
             id: this.id,

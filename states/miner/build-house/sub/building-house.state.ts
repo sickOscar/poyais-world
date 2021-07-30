@@ -46,6 +46,10 @@ export class BuildingHouseState extends State implements IState {
                         }
                         farmer.farm = farm;
                         return;
+                    } else {
+                        // no farm land available, change profession
+                        entity.removeComponent('FARMER');
+                        entity.findAJob();
                     }
                 }
 

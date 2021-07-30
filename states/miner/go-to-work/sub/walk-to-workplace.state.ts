@@ -6,36 +6,39 @@ import {PositionComponent, PositionComponentName} from "../../../../components/p
 import {Vector} from "../../../../abstract/geometry/vector";
 import {MovementComponent} from "../../../../components/movement.component";
 import {WalkingTo} from "../../walking/walking-to.state";
-import {BuildingTypes} from "../../../../components/building-stats.component";
-import {MiningState} from "./mining.state";
+import {JobComponent} from "../../../../components/job.component";
 
-export class WalkingToMineState extends WalkingTo implements IState {
+export class WalkToWorkplaceState extends WalkingTo implements IState {
 
-    name = "WalkingToMine";
+    name = "WalkToWorkplace";
 
     enter(entity:Miner) {
-        const mine = entity.locateClosestBuilding(BuildingTypes.MINE);
+        const job = <JobComponent>entity.getComponent('JOB');
         const movementComponent = <MovementComponent>entity.getComponent('MOVEMENT');
 
-        if (mine && movementComponent) {
-            movementComponent.arriveOn(mine);
-        } else {
-            const sm = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
-            sm.getFSM().revert();
+        if (job && movementComponent) {
+            movementComponent.arriveOn((<PositionComponent>job.workplace.getComponent(PositionComponentName)).position);
         }
+
 
     }
 
     execute(entity:Miner) {
+
+        const job = <JobComponent>entity.getComponent('JOB');
+
         this.walk(entity);
+
         const positionComponent = <PositionComponent>entity.getComponent(PositionComponentName);
-        const movementComponent = <MovementComponent>entity.getComponent('MOVEMENT');
+        const jobPosition = (<PositionComponent>job.workplace.getComponent(PositionComponentName)).position;
 
-
-        if (movementComponent.arriveTarget && Vector.distance(positionComponent.position, movementComponent.arriveTarget) < 1) {
+        if (Vector.distance(positionComponent.position, jobPosition) < 1) {
             const smComponent = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
             const localFsm = smComponent.getFSM().currentState.localFsm;
-            localFsm && localFsm.changeState(new MiningState());
+
+            if (localFsm) {
+                localFsm.revert()
+            }
         }
 
     }

@@ -3,7 +3,7 @@ import {IState} from "../../../../abstract/fsm/state";
 import {Miner} from "../../../../entities/miner";
 import {HasHouseComponent} from "../../../../components/has-house.component";
 import {MovementComponent} from "../../../../components/movement.component";
-import {PositionComponent} from "../../../../components/position.component";
+import {PositionComponent, PositionComponentName} from "../../../../components/position.component";
 import {Telegram} from "../../../../abstract/messaging/telegram";
 import {Vector} from "../../../../abstract/geometry/vector";
 import {StateMachineComponent} from "../../../../components/state-machine.component";
@@ -24,7 +24,7 @@ export class WalkToFieldState extends WalkingTo implements IState {
 
         if (farmer && farmer.farm) {
             const farmDimensions = <DimensionsComponent>farmer.farm.getComponent('DIMENSIONS');
-            const farmPosition = <PositionComponent>farmer.farm.getComponent('POSITION');
+            const farmPosition = <PositionComponent>farmer.farm.getComponent(PositionComponentName);
 
             if (farmDimensions && farmPosition && farmDimensions.height && farmDimensions.width) {
                 const angleClamp = Vector.randomClamped();
@@ -44,7 +44,7 @@ export class WalkToFieldState extends WalkingTo implements IState {
 
         this.walk(entity);
 
-        const positionComponent = <PositionComponent>entity.getComponent('POSITION');
+        const positionComponent = <PositionComponent>entity.getComponent(PositionComponentName);
 
         if (!this.fieldDestination) {
             return smComponent.getFSM().changeState(new GoRest());

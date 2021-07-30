@@ -1,6 +1,5 @@
 import {GameEntity} from "../abstract/ecs/game-entity";
 import {ExportEntity, World} from "../world";
-import {noise} from "../abstract/geometry/perlin";
 import * as fs from 'fs';
 import {Vector} from "../abstract/geometry/vector";
 
@@ -15,17 +14,26 @@ export class Wall {
 }
 
 export enum TerrainType {
-    WATER = 0,
-    GRASS = 1,
-    TERRAIN = 2,
-    UNDERWOOD = 3
+    DEEPWATER= 0,
+    WATER= 1,
+    SAND= 2,
+    GRASS= 3,
+    TERRAIN= 4,
+    HILL= 5,
+    ROCK= 6,
+    LAVA= 7
 }
 
 export const TerrainFriction = {
-    [TerrainType.WATER]: .5,
+    [TerrainType.DEEPWATER]: 0.90,
+    [TerrainType.WATER]: 0.90,
+    [TerrainType.SAND]: 0.99,
     [TerrainType.GRASS]: 0.99,
     [TerrainType.TERRAIN]: 0.98,
-    [TerrainType.UNDERWOOD]: 0.96
+    [TerrainType.HILL]: 0.96,
+    [TerrainType.ROCK]: 0.80,
+    [TerrainType.LAVA]: 0.80,
+
 }
 
 export type ExportMapEntity = ExportEntity & {
@@ -68,7 +76,7 @@ export class WorldMap extends GameEntity {
     terrainAtCoords(x:number, y:number):TerrainType {
         const indexX = Math.floor(x / this.tileSize);
         const indexY = Math.floor(y / this.tileSize);
-        if (!this.grid[indexY] || !this.grid[indexY][indexX]) {
+        if (this.grid[indexY] == undefined || this.grid[indexY][indexX] == undefined) {
             return TerrainType.GRASS;
         }
         return this.grid[indexY][indexX]

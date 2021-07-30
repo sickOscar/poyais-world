@@ -8,7 +8,7 @@ import {MovementComponent} from "../../../../components/movement.component";
 import {HasBagComponent} from "../../../../components/has-bag.component";
 import {Mine} from "../../../../entities/mine";
 import {BuildingTypes} from "../../../../components/building-stats.component";
-import {PositionComponent} from "../../../../components/position.component";
+import {PositionComponent, PositionComponentName} from "../../../../components/position.component";
 import {Vector} from "../../../../abstract/geometry/vector";
 import {Tree} from "../../../../entities/tree";
 import {WalkingToMineState} from "./walking-to-mine.state";
@@ -26,7 +26,7 @@ export class MiningState extends State implements IState {
 
     enter(entity:Miner) {
         const closestMinePosition = entity.locateClosestBuilding(BuildingTypes.MINE);
-        const position = <PositionComponent>entity.getComponent('POSITION');
+        const position = <PositionComponent>entity.getComponent(PositionComponentName);
         const sm = <StateMachineComponent>entity.getComponent('STATE-MACHINE');
 
         if (!closestMinePosition) {

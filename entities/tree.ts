@@ -1,5 +1,5 @@
 import {GameEntity} from "../abstract/ecs/game-entity";
-import {PositionComponent} from "../components/position.component";
+import {PositionComponent, PositionComponentName} from "../components/position.component";
 import {Vector} from "../abstract/geometry/vector";
 import {ExportBuildingEntity, ExportEntity, World} from "../world";
 import {WorldRefComponent} from "../components/world-ref.component";
@@ -36,7 +36,7 @@ export class Tree extends GameEntity {
     }
 
     export():ExportBuildingEntity {
-        const positionComponent = <PositionComponent>this.getComponent('POSITION');
+        const positionComponent = <PositionComponent>this.getComponent(PositionComponentName);
         const dimensionsComponent = <DimensionsComponent>this.getComponent('DIMENSIONS')
         const life = <TreeLifecycleComponent>this.getComponent('TREE-LIFECYCLE');
 

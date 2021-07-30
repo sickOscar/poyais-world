@@ -1,6 +1,6 @@
 import {GameEntity} from "../abstract/ecs/game-entity";
 import {WorldRefComponent} from "../components/world-ref.component";
-import {PositionComponent} from "../components/position.component";
+import {PositionComponent, PositionComponentName} from "../components/position.component";
 import {ExportBuildingEntity, ExportEntity, World} from "../world";
 import {Vector} from "../abstract/geometry/vector";
 import {DimensionsComponent} from "../components/dimensions.component";
@@ -31,7 +31,7 @@ export class Farm extends GameEntity {
     }
 
     export():ExportBuildingEntity {
-        const positionComponent = <PositionComponent>this.getComponent('POSITION');
+        const positionComponent = <PositionComponent>this.getComponent(PositionComponentName);
         const dimensions = <DimensionsComponent>this.getComponent('DIMENSIONS');
         const building  = <BuildingStatsComponent>this.getComponent('BUILDING-STATS');
 

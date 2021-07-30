@@ -1,10 +1,13 @@
 import {GameEntity} from "../abstract/ecs/game-entity";
-import {PositionComponent} from "../components/position.component";
+import {PositionComponent, PositionComponentName} from "../components/position.component";
 import {Vector} from "../abstract/geometry/vector";
 import {BuildingStatsComponent, BuildingTypes} from "../components/building-stats.component";
 import {ExportBuildingEntity, ExportEntity, World} from "../world";
 import {WorldRefComponent} from "../components/world-ref.component";
 import {DimensionsComponent} from "../components/dimensions.component";
+import {HasEmployeesComponent} from "../components/has-employees.component";
+import {Jobs} from "../components/job.component";
+import {Depositables, DepositComponent} from "../components/has-deposit.component";
 
 export interface BankOptions {
     position: Vector,
@@ -31,6 +34,9 @@ export class Bank extends GameEntity {
                 width: 60,
                 height: 60
             }))
+            .addComponent(new HasEmployeesComponent(10, Jobs.BANKER))
+            .addComponent(new DepositComponent([Depositables.GOLD]));
+
 
     }
 
@@ -93,7 +99,7 @@ export class Bank extends GameEntity {
     }
 
     export():ExportBuildingEntity {
-        const positionComponent = <PositionComponent>this.getComponent('POSITION');
+        const positionComponent = <PositionComponent>this.getComponent(PositionComponentName);
         const buildingStats = <BuildingStatsComponent>this.getComponent('BUILDING-STATS');
         const dimensions = <DimensionsComponent>this.getComponent('DIMENSIONS');
 

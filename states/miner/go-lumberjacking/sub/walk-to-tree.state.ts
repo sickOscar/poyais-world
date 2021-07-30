@@ -2,7 +2,7 @@ import {IState} from "../../../../abstract/fsm/state";
 import {Miner} from "../../../../entities/miner";
 import {Telegram} from "../../../../abstract/messaging/telegram";
 import {StateMachineComponent} from "../../../../components/state-machine.component";
-import {PositionComponent} from "../../../../components/position.component";
+import {PositionComponent, PositionComponentName} from "../../../../components/position.component";
 import {Vector} from "../../../../abstract/geometry/vector";
 import {MovementComponent} from "../../../../components/movement.component";
 import {WalkingTo} from "../../walking/walking-to.state";
@@ -23,7 +23,7 @@ export class WalkToTreeState extends WalkingTo implements IState {
     execute(entity: Miner) {
         this.walk(entity);
 
-        const positionComponent = <PositionComponent>entity.getComponent('POSITION');
+        const positionComponent = <PositionComponent>entity.getComponent(PositionComponentName);
         const movementComponent = <MovementComponent>entity.getComponent('MOVEMENT');
 
         if (movementComponent.arriveTarget && Vector.distance(positionComponent.position, movementComponent.arriveTarget) < 1) {

@@ -27,7 +27,6 @@ app.get('/', (req:Request, res:Response) => {
 
 app.post('/miner', (req:Request, res:Response) => {
     const {x, y} = req.body;
-    console.log(`x, y`, x, y)
     game.addMiner(x, y);
     res.json({});
 })

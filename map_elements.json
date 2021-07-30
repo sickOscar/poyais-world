@@ -1,0 +1,321 @@
+{
+  "areas": [
+    {
+      "type": "houses",
+      "center": [
+        562,
+        669.1671656686626
+      ],
+      "width": 372,
+      "height": 93.09281437125753
+    },
+    {
+      "type": "houses",
+      "center": [
+        767.5,
+        768.7664670658683
+      ],
+      "width": 135,
+      "height": 86.08582834331332
+    },
+    {
+      "type": "houses",
+      "center": [
+        697,
+        333.8328343313373
+      ],
+      "width": 230,
+      "height": 113.11277445109783
+    },
+    {
+      "type": "farms",
+      "center": [
+        989,
+        401.4001996007984
+      ],
+      "width": 282,
+      "height": 148.14770459081836
+    },
+    {
+      "type": "farms",
+      "center": [
+        545.5,
+        536.5349301397205
+      ],
+      "width": 299,
+      "height": 148.1477045908183
+    },
+    {
+      "type": "farms",
+      "center": [
+        1399.5,
+        600.0983033932135
+      ],
+      "width": 343,
+      "height": 285.28443113772454
+    },
+    {
+      "type": "houses",
+      "center": [
+        477,
+        1590
+      ],
+      "width": 320,
+      "height": 85
+    },
+    {
+      "type": "houses",
+      "center": [
+        704,
+        1622
+      ],
+      "width": 102,
+      "height": 253
+    },
+    {
+      "type": "farms",
+      "center": [
+        1339,
+        1649.5
+      ],
+      "width": 372,
+      "height": 112
+    },
+    {
+      "type": "farms",
+      "center": [
+        942.5,
+        1619
+      ],
+      "width": 265,
+      "height": 107
+    }
+  ],
+  "buildings": [
+    {
+      "type": "bank",
+      "center": [
+        1132,
+        1511
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "bank",
+      "center": [
+        766,
+        572.25
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "tavern",
+      "center": [
+        971,
+        657.25
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "tavern",
+      "center": [
+        485,
+        412.25
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "warehouse",
+      "center": [
+        1042,
+        631.25
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "tavern",
+      "center": [
+        558,
+        1505
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "warehouse",
+      "center": [
+        1191,
+        1551
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "forest",
+      "center": [
+        998,
+        1507
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "forest",
+      "center": [
+        346,
+        1494
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "forest",
+      "center": [
+        1794,
+        1142
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "forest",
+      "center": [
+        438,
+        1491
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "forest",
+      "center": [
+        540,
+        1429
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "forest",
+      "center": [
+        1074,
+        1468
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "forest",
+      "center": [
+        886,
+        1493
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "forest",
+      "center": [
+        813,
+        670
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "forest",
+      "center": [
+        1022,
+        737
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "forest",
+      "center": [
+        1182,
+        798
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "forest",
+      "center": [
+        304,
+        569
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "forest",
+      "center": [
+        350,
+        409
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "forest",
+      "center": [
+        1270,
+        328
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "forest",
+      "center": [
+        958,
+        232
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "mine",
+      "center": [
+        390,
+        1447
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "mine",
+      "center": [
+        1192,
+        1352
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "mine",
+      "center": [
+        1380,
+        899.75
+      ],
+      "width": 30,
+      "height": 30
+    },
+    {
+      "type": "mine",
+      "center": [
+        1537,
+        818.75
+      ],
+      "width": 30,
+      "height": 30
+    }
+  ]
+}

@@ -10,6 +10,8 @@ import {GoDrinkingState} from "../../go-drinking/go-drinking.state";
 import {IsInBuildingComponent} from "../../../../components/is-in-building.component";
 import {HasHouseComponent} from "../../../../components/has-house.component";
 import {FarmerComponent} from "../../../../components/farmer.component";
+import {JobComponent} from "../../../../components/job.component";
+import {GoToWorkState} from "../../go-to-work/go-to-work.state";
 
 export class RestingAtHomeState extends State implements IState {
 
@@ -33,7 +35,7 @@ export class RestingAtHomeState extends State implements IState {
         const stateMachineComponent = <StateMachineComponent>entity.getComponent('STATE-MACHINE')
         const fsm = <StateMachine>stateMachineComponent.getFSM();
         const farmer = <FarmerComponent>entity.getComponent('FARMER')
-
+        const job = <JobComponent>entity.getComponent('JOB');
 
         humanStats.boredom += 1 * delta;
         humanStats.thirst += 1 * delta;
@@ -42,6 +44,19 @@ export class RestingAtHomeState extends State implements IState {
         if (humanStats.fatigue > 10) {
             return;
         }
+
+        if (job) {
+            const r = Math.random();
+            if (r < .7) {
+                fsm.changeState(new GoToWorkState());
+                return;
+            }
+            if (r > .7) {
+                fsm.changeState(new GoDrinkingState())
+            }
+
+        }
+
 
         // wander if bored
         if (humanStats.boredom >= humanStats.maxBoredom) {
